@@ -1,0 +1,162 @@
+name: 🐛 Bug Report
+description: Create a report to help us improve OctoEdit
+title: '[Bug]: '
+labels: ['bug', 'needs-triage']
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as possible.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please verify these items before submitting
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have tested this with the latest version
+          required: true
+        - label: I have included all relevant information below
+          required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Describe the bug you encountered...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A clear description of what you expected to happen
+      placeholder: What should have happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened instead
+      placeholder: What actually happened?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which component is affected?
+      options:
+        - Core Engine (C++)
+        - User Interface (Electron)
+        - Python API
+        - Database
+        - Build System
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this bug?
+      options:
+        - Critical (Application crashes)
+        - High (Major functionality broken)
+        - Medium (Some functionality affected)
+        - Low (Minor issue)
+        - Cosmetic (UI/UX issue)
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: OctoEdit Version
+      description: What version of OctoEdit are you using?
+      placeholder: e.g., 1.0.0, main branch commit hash
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      description: What operating system are you using?
+      options:
+        - Windows 11
+        - Windows 10
+        - macOS Ventura (13.x)
+        - macOS Monterey (12.x)
+        - macOS Big Sur (11.x)
+        - Ubuntu 22.04
+        - Ubuntu 20.04
+        - Other Linux Distribution
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: os_version
+    attributes:
+      label: OS Version Details
+      description: Specific OS version, architecture, etc.
+      placeholder: e.g., Windows 11 22H2, macOS 13.1, Ubuntu 22.04.1 LTS x64
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: System Information
+      description: Additional system details that might be relevant
+      placeholder: |
+        - CPU: 
+        - RAM: 
+        - GPU: 
+        - Display: 
+        - Python version: 
+        - Node.js version:
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Messages and Logs
+      description: Any error messages, console output, or log files
+      placeholder: Paste error messages or logs here...
+      render: text
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem
+      placeholder: Drag and drop images here or paste image URLs
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any additional information that might help us understand the issue
+      placeholder: Add any other context about the problem here...

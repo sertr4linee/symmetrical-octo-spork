@@ -1,0 +1,39 @@
+# OctoEdit Python Dependencies
+
+# Core dependencies
+numpy>=1.21.0
+pillow>=9.0.0
+opencv-python>=4.5.0
+
+# Python-C++ bindings
+pybind11>=2.10.0
+
+# Plugin development
+pluggy>=1.0.0
+importlib-metadata>=4.0.0
+
+# Scripting and automation
+click>=8.0.0
+pathlib2>=2.3.0
+
+# Image processing extensions
+scikit-image>=0.19.0
+imageio>=2.19.0
+
+# Development dependencies
+pytest>=7.0.0
+pytest-cov>=4.0.0
+black>=22.0.0
+mypy>=0.991
+flake8>=5.0.0
+isort>=5.10.0
+
+# Documentation
+sphinx>=5.0.0
+sphinx-rtd-theme>=1.0.0
+myst-parser>=0.18.0
+
+# Build tools
+wheel>=0.37.0
+setuptools>=65.0.0
+build>=0.8.0
