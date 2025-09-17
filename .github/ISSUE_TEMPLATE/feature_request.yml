@@ -1,0 +1,170 @@
+name: ✨ Feature Request
+description: Suggest a new feature for OctoEdit
+title: '[Feature]: '
+labels: ['enhancement', 'needs-triage']
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! Please provide detailed information to help us understand your request.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please verify these items before submitting
+      options:
+        - label: I have searched existing issues to ensure this feature hasn't been requested
+          required: true
+        - label: I have reviewed the project roadmap and documentation
+          required: true
+        - label: This feature aligns with the project's goals and scope
+          required: true
+
+  - type: dropdown
+    id: feature_type
+    attributes:
+      label: Feature Type
+      description: What type of feature is this?
+      options:
+        - New Tool (Brush, Selection, etc.)
+        - New Filter/Effect
+        - UI/UX Improvement
+        - Performance Enhancement
+        - Python API Extension
+        - File Format Support
+        - Plugin System Feature
+        - Accessibility Feature
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? What's the current limitation?
+      placeholder: Describe the problem or limitation this feature would address...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your ideal solution for this feature
+      placeholder: Describe how you envision this feature working...
+    validations:
+      required: true
+
+  - type: textarea
+    id: use_cases
+    attributes:
+      label: Use Cases
+      description: Describe specific scenarios where this feature would be useful
+      placeholder: |
+        1. As a digital artist, I want to...
+        2. When editing photos, I need to...
+        3. For workflow automation, I would like to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: Have you considered any alternative approaches?
+      placeholder: Describe any alternative solutions or features you've considered...
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Critical (Essential for workflow)
+        - High (Would significantly improve experience)
+        - Medium (Nice to have)
+        - Low (Minor improvement)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Estimated Complexity
+      description: How complex do you think this feature would be to implement?
+      options:
+        - Simple (Small change, minimal impact)
+        - Medium (Moderate implementation effort)
+        - Complex (Significant development required)
+        - Major (Requires architectural changes)
+        - Unknown
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: components
+    attributes:
+      label: Affected Components
+      description: Which parts of OctoEdit would this feature affect? (Select all that apply)
+      options:
+        - label: Core Engine (C++)
+        - label: User Interface (Electron/React)
+        - label: Python API
+        - label: Database Schema
+        - label: File I/O
+        - label: Plugin System
+        - label: Documentation
+        - label: Build System
+
+  - type: textarea
+    id: technical_details
+    attributes:
+      label: Technical Implementation Ideas
+      description: If you have technical knowledge, describe how this might be implemented
+      placeholder: |
+        Any technical details, API suggestions, or implementation ideas...
+        - New classes/modules needed
+        - Database changes required
+        - UI components needed
+        - Performance considerations
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups/Examples
+      description: Visual examples, mockups, or references from other applications
+      placeholder: |
+        Attach mockups, screenshots from other tools, or links to examples.
+        You can drag and drop images here.
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Links to related issues, documentation, or external resources
+      placeholder: |
+        - Related GitHub issues: #123
+        - Documentation: https://...
+        - External examples: https://...
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Are you interested in contributing to this feature?
+      options:
+        - label: I would like to work on implementing this feature
+        - label: I can help with design/mockups
+        - label: I can help with testing
+        - label: I can help with documentation
+        - label: I can provide feedback during development
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other information that would help us understand this feature request
+      placeholder: Add any other context, requirements, or considerations...

@@ -1,0 +1,212 @@
+# Build directories
+build/
+dist/
+dist-electron/
+out/
+
+# C++ build artifacts
+*.o
+*.obj
+*.so
+*.dll
+*.dylib
+*.a
+*.lib
+*.exe
+*.app
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# Visual Studio
+.vs/
+*.vcxproj*
+*.sln
+*.suo
+*.user
+
+# Xcode
+*.xcodeproj/
+*.xcworkspace/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Node.js / Electron
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+.pnp.*
+package-lock.json
+yarn.lock
+
+# Electron specific
+dist-electron/
+release/
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.bak
+*.backup
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Image files (for testing)
+test_images/
+sample_images/
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.tiff
+*.tif
+*.psd
+*.xcf
+
+# Documentation build
+docs/_build/
+docs/build/
+site/
+
+# Testing
+coverage/
+.coverage.*
+*.cover
+.hypothesis/
+
+# System files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Local environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Package managers
+*.tar.gz
+*.zip
+*.rar
+*.7z
+
+# Conan
+conandata.txt
+conanfile.txt
+conaninfo.txt
+
+# Performance data
+*.perf
+profile_data/
+
+# Plugin development
+plugins/dev/
+plugins/test/
+
+# User data (should not be committed)
+user_data/
+projects/
+preferences/
+cache/
+
+# Profiling
+*.prof
+*.pprof
+
+# Qt (if used)
+*.pro.user*
+*.qmlc
+*.jsc
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.moc
+
+# Rust (if used for plugins)
+target/
+Cargo.lock
+
+# Go (if used for tools)
+vendor/
+*.exe
+*.test
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Tags
+TAGS
+tags
+*.tags
