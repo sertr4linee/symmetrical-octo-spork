@@ -83,19 +83,9 @@ endif()
 # SOURCE FILES
 # ====================================
 set(CORE_SOURCES
+    src/core.cpp
     src/image/image.cpp
-    src/image/image_loader.cpp
     src/image/image_processor.cpp
-    src/filters/basic_filters.cpp
-    src/filters/gaussian_blur.cpp
-    src/filters/unsharp_mask.cpp
-    src/transforms/resize.cpp
-    src/transforms/rotate.cpp
-    src/adjustments/brightness_contrast.cpp
-    src/adjustments/curves.cpp
-    src/adjustments/levels.cpp
-    src/utils/simd_utils.cpp
-    src/utils/memory_pool.cpp
 )
 
 set(CORE_HEADERS
