@@ -1,0 +1,382 @@
+name: Dependency & Security Audit
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly on Monday at 6 AM
+  push:
+    paths:
+      - '**/requirements.txt'
+      - '**/package.json'
+      - '**/package-lock.json'
+      - '**/conanfile.txt'
+      - '**/CMakeLists.txt'
+  workflow_dispatch:
+
+jobs:
+  # ====================================
+  # DEPENDENCY AUDIT
+  # ====================================
+  dependency-audit:
+    name: Dependency Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    # Python dependencies
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Python dependency audit
+      run: |
+        cd backend-python
+        pip install safety pip-audit
+        
+        echo "## Python Dependency Audit" >> ../security_report.md
+        echo "### Safety Check" >> ../security_report.md
+        safety check --json --output safety_report.json || true
+        
+        echo "### Pip Audit" >> ../security_report.md
+        pip-audit --format=json --output=pip_audit.json || true
+        
+        # Convert to markdown
+        python3 << 'EOF'
+        import json
+        
+        try:
+            with open('safety_report.json') as f:
+                safety_data = json.load(f)
+            
+            with open('../security_report.md', 'a') as f:
+                f.write("#### Safety Results:\n")
+                if safety_data:
+                    for vuln in safety_data:
+                        f.write(f"- **{vuln['package']}** {vuln['installed_version']}: {vuln['vulnerability']}\n")
+                else:
+                    f.write("✅ No vulnerabilities found\n")
+                f.write("\n")
+        except:
+            pass
+        EOF
+    
+    # Node.js dependencies
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Node.js dependency audit
+      run: |
+        cd frontend-electron
+        
+        echo "### Node.js Audit" >> ../security_report.md
+        npm audit --audit-level=moderate --json > npm_audit.json || true
+        
+        # Convert npm audit to markdown
+        python3 << 'EOF'
+        import json
+        
+        try:
+            with open('npm_audit.json') as f:
+                audit_data = json.load(f)
+            
+            with open('../security_report.md', 'a') as f:
+                f.write("#### NPM Audit Results:\n")
+                vulnerabilities = audit_data.get('vulnerabilities', {})
+                if vulnerabilities:
+                    for pkg, vuln in vulnerabilities.items():
+                        severity = vuln.get('severity', 'unknown')
+                        f.write(f"- **{pkg}**: {severity} severity\n")
+                else:
+                    f.write("✅ No vulnerabilities found\n")
+                f.write("\n")
+        except:
+            pass
+        EOF
+    
+    # License compliance check
+    - name: License compliance check
+      run: |
+        echo "## License Compliance" >> security_report.md
+        
+        # Python licenses
+        cd backend-python
+        pip install pip-licenses
+        pip-licenses --format=json --output-file=../python_licenses.json || true
+        
+        cd ../frontend-electron
+        npm install -g license-checker
+        license-checker --json --out ../node_licenses.json || true
+        
+        cd ..
+        python3 << 'EOF'
+        import json
+        
+        # Check for problematic licenses
+        problematic_licenses = ['GPL-3.0', 'AGPL-3.0', 'LGPL-2.1', 'LGPL-3.0']
+        
+        with open('security_report.md', 'a') as f:
+            f.write("### License Analysis\n")
+            
+            # Python licenses
+            try:
+                with open('python_licenses.json') as file:
+                    py_licenses = json.load(file)
+                for pkg in py_licenses:
+                    license_name = pkg.get('License', 'Unknown')
+                    if any(prob in license_name for prob in problematic_licenses):
+                        f.write(f"⚠️ **{pkg['Name']}**: {license_name} (review required)\n")
+            except:
+                pass
+            
+            # Node licenses
+            try:
+                with open('node_licenses.json') as file:
+                    node_licenses = json.load(file)
+                for pkg, info in node_licenses.items():
+                    license_name = info.get('licenses', 'Unknown')
+                    if any(prob in str(license_name) for prob in problematic_licenses):
+                        f.write(f"⚠️ **{pkg}**: {license_name} (review required)\n")
+            except:
+                pass
+        EOF
+    
+    # C++ dependency check (Conan)
+    - name: C++ dependency audit
+      run: |
+        pip install conan
+        conan profile detect --force
+        
+        cd core-cpp
+        echo "### C++ Dependencies (Conan)" >> ../security_report.md
+        
+        # List dependencies
+        conan install . --build=missing --install-folder=build || true
+        conan info . >> ../security_report.md || true
+
+  # ====================================
+  # CODE QUALITY ANALYSIS
+  # ====================================
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for SonarCloud
+    
+    # SonarCloud analysis
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        args: >
+          -Dsonar.projectKey=betterps
+          -Dsonar.organization=your-org
+          -Dsonar.sources=core-cpp/src,backend-python,frontend-electron/src
+          -Dsonar.tests=core-cpp/tests,backend-python/tests,frontend-electron/tests
+          -Dsonar.cfamily.build-wrapper-output=build-wrapper-output
+          -Dsonar.python.coverage.reportPaths=backend-python/coverage.xml
+          -Dsonar.javascript.lcov.reportPaths=frontend-electron/coverage/lcov.info
+    
+    # CodeClimate analysis
+    - name: Setup Code Climate
+      run: |
+        curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+        chmod +x ./cc-test-reporter
+        ./cc-test-reporter before-build
+    
+    - name: Run Code Climate analysis
+      run: |
+        # Combine coverage reports
+        ./cc-test-reporter format-coverage backend-python/coverage.xml -t coverage.py || true
+        ./cc-test-reporter format-coverage frontend-electron/coverage/lcov.info -t lcov || true
+        
+        # Upload to Code Climate
+        ./cc-test-reporter upload-coverage || true
+      env:
+        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+
+  # ====================================
+  # SECURITY SCANNING
+  # ====================================
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    # Trivy vulnerability scanner
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+    
+    # Semgrep static analysis
+    - name: Semgrep Security Scan
+      uses: returntocorp/semgrep-action@v1
+      with:
+        config: >-
+          p/security-audit
+          p/secrets
+          p/python
+          p/typescript
+          p/c
+    
+    # Secret scanning
+    - name: Secret Detection
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: main
+        head: HEAD
+        extra_args: --debug --only-verified
+
+  # ====================================
+  # DEPENDENCY UPDATE PR
+  # ====================================
+  dependency-updates:
+    name: Create Dependency Update PRs
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    # Python dependency updates
+    - name: Update Python dependencies
+      run: |
+        cd backend-python
+        pip install pip-tools
+        
+        # Update requirements
+        pip-compile --upgrade requirements.in || true
+        pip-compile --upgrade requirements-dev.in || true
+        
+        # Check for changes
+        if git diff --quiet requirements.txt requirements-dev.txt; then
+          echo "No Python dependency updates"
+        else
+          echo "PYTHON_UPDATES=true" >> $GITHUB_ENV
+        fi
+    
+    # Node.js dependency updates
+    - name: Update Node.js dependencies
+      run: |
+        cd frontend-electron
+        
+        # Update dependencies
+        npx npm-check-updates -u || true
+        npm install || true
+        
+        # Check for changes
+        if git diff --quiet package.json package-lock.json; then
+          echo "No Node.js dependency updates"
+        else
+          echo "NODE_UPDATES=true" >> $GITHUB_ENV
+        fi
+    
+    # Create PR for updates
+    - name: Create Dependency Update PR
+      if: env.PYTHON_UPDATES == 'true' || env.NODE_UPDATES == 'true'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: 'chore: update dependencies'
+        title: '🔄 Automated Dependency Updates'
+        body: |
+          ## Automated Dependency Updates
+          
+          This PR contains automated dependency updates:
+          
+          ${{ env.PYTHON_UPDATES == 'true' && '- ✅ Python dependencies updated' || '- ⏭️ No Python updates' }}
+          ${{ env.NODE_UPDATES == 'true' && '- ✅ Node.js dependencies updated' || '- ⏭️ No Node.js updates' }}
+          
+          **Security and compatibility checks:**
+          - [ ] All tests pass
+          - [ ] No security vulnerabilities introduced
+          - [ ] No breaking changes detected
+          
+          **Review process:**
+          1. Automated tests will run on this PR
+          2. Manual review recommended for major version updates
+          3. Merge after successful testing
+          
+          Created by automated dependency update workflow.
+        branch: feature/dependency-updates
+        delete-branch: true
+
+  # ====================================
+  # SECURITY REPORT
+  # ====================================
+  security-report:
+    name: Generate Security Report
+    needs: [dependency-audit, security-scan]
+    if: always()
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download security artifacts
+      uses: actions/download-artifact@v3
+      continue-on-error: true
+    
+    - name: Compile security report
+      run: |
+        echo "# Security & Dependency Report" > final_security_report.md
+        echo "**Generated:** $(date)" >> final_security_report.md
+        echo "" >> final_security_report.md
+        
+        # Add dependency audit results
+        if [ -f security_report.md ]; then
+          cat security_report.md >> final_security_report.md
+        fi
+        
+        echo "" >> final_security_report.md
+        echo "## Recommended Actions" >> final_security_report.md
+        echo "1. Review all HIGH and CRITICAL vulnerabilities" >> final_security_report.md
+        echo "2. Update dependencies with security patches" >> final_security_report.md
+        echo "3. Review license compatibility" >> final_security_report.md
+        echo "4. Address any secret scanning findings" >> final_security_report.md
+    
+    - name: Upload security report
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-report
+        path: final_security_report.md
+    
+    - name: Comment security summary on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = './final_security_report.md';
+          
+          if (fs.existsSync(path)) {
+            const report = fs.readFileSync(path, 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔒 Security & Dependency Report\n\n${report.substring(0, 10000)}`
+            });
+          }
