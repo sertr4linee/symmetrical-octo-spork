@@ -1,64 +1,64 @@
 {
-  "github": {
-    "repo": "https://github.com/sertr4linee/symmetrical-octo-spork",
-    "draft": false,
-    "prerelease": false
-  },
-  "cdn": {
-    "endpoint": "https://cdn.bettergimp.dev",
-    "bucket": "bettergimp-releases",
-    "region": "us-east-1"
-  },
-  "docker": {
-    "registry": "ghcr.io",
-    "namespace": "sertr4linee"
-  },
-  "notifications": {
-    "discord": {
-      "enabled": true,
-      "webhook_env": "DISCORD_WEBHOOK_URL"
+    "github": {
+        "repo": "https://github.com/sertr4linee/symmetrical-octo-spork",
+        "draft": false,
+        "prerelease": false
     },
-    "slack": {
-      "enabled": true,
-      "webhook_env": "SLACK_WEBHOOK_URL"
+    "cdn": {
+        "endpoint": "https://cdn.bettergimp.dev",
+        "bucket": "bettergimp-releases",
+        "region": "us-east-1"
     },
-    "twitter": {
-      "enabled": false,
-      "api_key_env": "TWITTER_API_KEY",
-      "api_secret_env": "TWITTER_API_SECRET"
+    "docker": {
+        "registry": "ghcr.io",
+        "namespace": "sertr4linee"
+    },
+    "notifications": {
+        "discord": {
+            "enabled": true,
+            "webhook_env": "DISCORD_WEBHOOK_URL"
+        },
+        "slack": {
+            "enabled": true,
+            "webhook_env": "SLACK_WEBHOOK_URL"
+        },
+        "twitter": {
+            "enabled": false,
+            "api_key_env": "TWITTER_API_KEY",
+            "api_secret_env": "TWITTER_API_SECRET"
+        }
+    },
+    "packaging": {
+        "homebrew": {
+            "enabled": true,
+            "formula_path": "packaging/homebrew/bettergimp.rb"
+        },
+        "arch": {
+            "enabled": true,
+            "pkgbuild_path": "packaging/arch/PKGBUILD"
+        },
+        "snap": {
+            "enabled": true,
+            "snapcraft_path": "packaging/snap/snapcraft.yaml"
+        },
+        "flatpak": {
+            "enabled": false,
+            "manifest_path": "packaging/flatpak/dev.bettergimp.BetterGimp.yml"
+        }
+    },
+    "deployment": {
+        "environments": {
+            "staging": {
+                "url": "https://staging.bettergimp.dev",
+                "auto_deploy": true,
+                "branches": ["develop"]
+            },
+            "production": {
+                "url": "https://bettergimp.dev",
+                "auto_deploy": false,
+                "branches": ["main"],
+                "requires_approval": true
+            }
+        }
     }
-  },
-  "packaging": {
-    "homebrew": {
-      "enabled": true,
-      "formula_path": "packaging/homebrew/bettergimp.rb"
-    },
-    "arch": {
-      "enabled": true,
-      "pkgbuild_path": "packaging/arch/PKGBUILD"
-    },
-    "snap": {
-      "enabled": true,
-      "snapcraft_path": "packaging/snap/snapcraft.yaml"
-    },
-    "flatpak": {
-      "enabled": false,
-      "manifest_path": "packaging/flatpak/dev.bettergimp.BetterGimp.yml"
-    }
-  },
-  "deployment": {
-    "environments": {
-      "staging": {
-        "url": "https://staging.bettergimp.dev",
-        "auto_deploy": true,
-        "branches": ["develop"]
-      },
-      "production": {
-        "url": "https://bettergimp.dev",
-        "auto_deploy": false,
-        "branches": ["main"],
-        "requires_approval": true
-      }
-    }
-  }
 }

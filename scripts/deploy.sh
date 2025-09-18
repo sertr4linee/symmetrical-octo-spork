@@ -1,36 +1,28 @@
 #!/bin/bash
 
-# Better GIMP Deployment Script
-# Automated deployment to various platforms and services
-
 set -euo pipefail
 
-# Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 DEPLOY_CONFIG="$SCRIPT_DIR/deploy-config.json"
 
-# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-# Logging functions
 log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
-# Load deployment configuration
 load_config() {
     if [ ! -f "$DEPLOY_CONFIG" ]; then
         log_error "Deployment config not found: $DEPLOY_CONFIG"
         exit 1
     fi
     
-    # Read configuration values
     GITHUB_REPO=$(jq -r '.github.repo' "$DEPLOY_CONFIG")
     RELEASE_DRAFT=$(jq -r '.github.draft' "$DEPLOY_CONFIG")
     RELEASE_PRERELEASE=$(jq -r '.github.prerelease' "$DEPLOY_CONFIG")
@@ -42,7 +34,6 @@ load_config() {
     DOCKER_NAMESPACE=$(jq -r '.docker.namespace' "$DEPLOY_CONFIG")
 }
 
-# Get version from git tag or generate one
 get_version() {
     if git describe --tags --exact-match HEAD 2>/dev/null; then
         VERSION=$(git describe --tags --exact-match HEAD)
@@ -53,19 +44,16 @@ get_version() {
     echo "$VERSION"
 }
 
-# Deploy to GitHub Releases
 deploy_github_release() {
     log_info "Deploying to GitHub Releases..."
     
     VERSION=$(get_version)
     
-    # Check if release exists
     if gh release view "$VERSION" >/dev/null 2>&1; then
         log_warning "Release $VERSION already exists, updating..."
         gh release delete "$VERSION" --yes
     fi
     
-    # Create release notes
     RELEASE_NOTES=$(cat << EOF
 ## Better GIMP $VERSION
 
@@ -115,7 +103,6 @@ Visit our [GitHub repository]($GITHUB_REPO) to contribute or report issues.
 EOF
 )
     
-    # Create GitHub release
     gh release create "$VERSION" \
         --title "Better GIMP $VERSION" \
         --notes "$RELEASE_NOTES" \
@@ -126,19 +113,16 @@ EOF
     log_success "GitHub release created: $VERSION"
 }
 
-# Deploy to CDN
 deploy_cdn() {
     log_info "Deploying to CDN..."
     
     VERSION=$(get_version)
     
-    # Upload to CDN (example with AWS S3)
     if command -v aws >/dev/null 2>&1; then
         aws s3 sync dist/ "s3://$CDN_BUCKET/releases/$VERSION/" \
             --exclude "*.git*" \
             --cache-control "max-age=31536000"
         
-        # Update latest symlink
         aws s3 cp "s3://$CDN_BUCKET/releases/$VERSION/" "s3://$CDN_BUCKET/releases/latest/" \
             --recursive
         
@@ -148,17 +132,14 @@ deploy_cdn() {
     fi
 }
 
-# Deploy Docker images
 deploy_docker() {
     log_info "Deploying Docker images..."
     
     VERSION=$(get_version)
     IMAGE_BASE="$DOCKER_REGISTRY/$DOCKER_NAMESPACE/bettergimp"
     
-    # Build multi-arch images
     docker buildx create --use --name bettergimp-builder 2>/dev/null || true
     
-    # Build and push runtime image
     docker buildx build \
         --platform linux/amd64,linux/arm64 \
         --file .docker/Dockerfile.build-env \
@@ -168,7 +149,6 @@ deploy_docker() {
         --push \
         .
     
-    # Build and push development image
     docker buildx build \
         --platform linux/amd64,linux/arm64 \
         --file .docker/Dockerfile.build-env \
@@ -181,11 +161,9 @@ deploy_docker() {
     log_success "Docker images deployed: $IMAGE_BASE:$VERSION"
 }
 
-# Deploy documentation
 deploy_docs() {
     log_info "Deploying documentation..."
     
-    # Build documentation if not exists
     if [ ! -d "docs/build" ]; then
         log_info "Building documentation..."
         cd docs
@@ -194,7 +172,6 @@ deploy_docs() {
         cd ..
     fi
     
-    # Deploy to GitHub Pages
     if [ -d "docs/build" ]; then
         gh-pages -d docs/build -m "docs: update documentation for $(get_version)"
         log_success "Documentation deployed to GitHub Pages"
@@ -203,38 +180,31 @@ deploy_docs() {
     fi
 }
 
-# Update package managers
 update_package_managers() {
     log_info "Updating package managers..."
     
     VERSION=$(get_version)
     
-    # Update Homebrew formula (macOS)
     if [ -f "packaging/homebrew/bettergimp.rb" ]; then
         log_info "Updating Homebrew formula..."
-        # Update version and SHA in formula
         sed -i "s/version \".*\"/version \"${VERSION#v}\"/" packaging/homebrew/bettergimp.rb
         
-        # Calculate SHA256 for macOS release
         if [ -f "dist/bettergimp-macos-x64.tar.gz" ]; then
             SHA256=$(shasum -a 256 "dist/bettergimp-macos-x64.tar.gz" | cut -d' ' -f1)
             sed -i "s/sha256 \".*\"/sha256 \"$SHA256\"/" packaging/homebrew/bettergimp.rb
         fi
     fi
     
-    # Update AUR package (Arch Linux)
     if [ -f "packaging/arch/PKGBUILD" ]; then
         log_info "Updating AUR package..."
         sed -i "s/pkgver=.*/pkgver=${VERSION#v}/" packaging/arch/PKGBUILD
         
-        # Update checksums
         if [ -f "dist/bettergimp-linux-x64.tar.gz" ]; then
             SHA256=$(sha256sum "dist/bettergimp-linux-x64.tar.gz" | cut -d' ' -f1)
             sed -i "s/sha256sums=.*/sha256sums=('$SHA256')/" packaging/arch/PKGBUILD
         fi
     fi
     
-    # Update Snap package
     if [ -f "packaging/snap/snapcraft.yaml" ]; then
         log_info "Updating Snap package..."
         sed -i "s/version: .*/version: '${VERSION#v}'/" packaging/snap/snapcraft.yaml
@@ -243,13 +213,11 @@ update_package_managers() {
     log_success "Package managers updated"
 }
 
-# Send notifications
 send_notifications() {
     log_info "Sending deployment notifications..."
     
     VERSION=$(get_version)
     
-    # Discord webhook
     if [ -n "${DISCORD_WEBHOOK_URL:-}" ]; then
         curl -X POST "$DISCORD_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
@@ -268,7 +236,6 @@ send_notifications() {
             }"
     fi
     
-    # Slack webhook
     if [ -n "${SLACK_WEBHOOK_URL:-}" ]; then
         curl -X POST "$SLACK_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
@@ -284,22 +251,18 @@ send_notifications() {
             }"
     fi
     
-    # Twitter/X API (if configured)
     if [ -n "${TWITTER_API_KEY:-}" ] && [ -n "${TWITTER_API_SECRET:-}" ]; then
-        # Use twitter CLI or API to post announcement
         log_info "Posting to Twitter/X..."
     fi
     
     log_success "Notifications sent"
 }
 
-# Main deployment function
 main() {
     echo -e "${BLUE}======================================${NC}"
     echo -e "${BLUE}   Better GIMP Deployment Script${NC}"
     echo -e "${BLUE}======================================${NC}"
     
-    # Check prerequisites
     if ! command -v jq >/dev/null 2>&1; then
         log_error "jq is required but not installed"
         exit 1
@@ -310,13 +273,10 @@ main() {
         exit 1
     fi
     
-    # Load configuration
     load_config
     
-    # Change to project root
     cd "$PROJECT_ROOT"
     
-    # Parse command line arguments
     case "${1:-all}" in
         github)
             deploy_github_release
@@ -349,5 +309,4 @@ main() {
     log_success "Deployment completed successfully!"
 }
 
-# Run main function
 main "$@"
