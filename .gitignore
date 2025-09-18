@@ -1,7 +1,50 @@
-# random
+# Better GIMP - Multi-component .gitignore
 
-.taskmaster
-.vscode
+# Taskmaster and editor config
+.taskmaster/
+.vscode/
+
+# ==================================
+# C++ CORE
+# ==================================
+core/build/
+core/cmake-build-*/
+core/.conan/
+core/CMakeUserPresets.json
+*.so
+*.dll
+*.dylib
+*.a
+*.lib
+*.o
+*.obj
+
+# ==================================
+# PYTHON SERVER
+# ==================================
+server/__pycache__/
+server/*.py[cod]
+server/*$py.class
+server/.pytest_cache/
+server/venv/
+server/.venv/
+server/dist/
+server/build/
+server/*.egg-info/
+
+# ==================================
+# ELECTRON/REACT UI
+# ==================================
+ui/node_modules/
+ui/dist/
+ui/build/
+ui/.next/
+ui/.cache/
+ui/coverage/
+
+# ==================================
+# GENERAL
+# ==================================
 
 # Logs
 logs

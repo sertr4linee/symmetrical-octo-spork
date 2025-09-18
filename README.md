@@ -27,3 +27,21 @@ Better GIMP is a modern alternative to traditional image editing software, combi
 │ Storage     │    │ Database     │    │ Buffers    │
 └─────────────┘    └──────────────┘    └────────────┘
 ```
+
+### 📁 Project Structure
+
+```
+betterps/
+├── 📁 core/           # C++ image processing engine
+│   ├── src/           # Source code
+│   ├── include/       # Public headers
+│   └── tests/         # Unit tests
+├── 📁 server/         # Python FastAPI backend
+│   ├── src/           # API implementation
+│   └── tests/         # API tests
+├── 📁 ui/             # Electron/React frontend
+│   ├── src/           # UI components
+│   └── public/        # Static assets
+├── 📁 scripts/        # Build and deployment scripts
+└── 📁 .github/        # CI/CD workflows
+```
