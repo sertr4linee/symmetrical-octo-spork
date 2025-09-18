@@ -17,36 +17,13 @@ router = APIRouter()
 
 @router.post("/upload")
 async def upload_image(
-    file: UploadFile = File(...),
-    project_id: Optional[str] = Form(None),
+    # Commenté temporairement pour tester l'API
+    # file: UploadFile = File(...),
+    # project_id: Optional[str] = Form(None),
     image_service: ImageService = Depends()
 ):
-    """Uploader une nouvelle image"""
-    
-    # Vérifier le type de fichier
-    if not file.content_type.startswith('image/'):
-        raise HTTPException(status_code=400, detail="File must be an image")
-    
-    # Lire le contenu du fichier
-    content = await file.read()
-    
-    # Créer l'objet image
-    image_data = ImageCreate(
-        filename=file.filename,
-        content_type=file.content_type,
-        project_id=project_id,
-        data=content
-    )
-    
-    # Sauvegarder via le service
-    image = await image_service.create_image(image_data)
-    
-    return {
-        "image_id": image.id,
-        "filename": image.filename,
-        "size": len(content),
-        "message": "Image uploaded successfully"
-    }
+    """Uploader une nouvelle image (endpoint temporaire)"""
+    return {"message": "Upload endpoint - à implémenter avec file upload"}
 
 
 @router.get("/{image_id}")
