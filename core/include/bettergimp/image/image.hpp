@@ -48,7 +48,7 @@ public:
      */
     Image& operator=(const Image& other);
     
-    /**
+    /**>
      * @brief Move assignment operator
      */
     Image& operator=(Image&& other) noexcept;

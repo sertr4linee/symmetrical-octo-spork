@@ -2,6 +2,7 @@
 #include <opencv2/imgproc.hpp>
 #include <tbb/parallel_for.h>
 #include <algorithm>
+#include <thread>
 
 namespace bettergimp {
 

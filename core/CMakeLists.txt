@@ -89,20 +89,9 @@ set(CORE_SOURCES
 )
 
 set(CORE_HEADERS
-    include/bettergimp/image/image.hpp
-    include/bettergimp/image/image_loader.hpp
-    include/bettergimp/image/image_processor.hpp
-    include/bettergimp/filters/basic_filters.hpp
-    include/bettergimp/filters/gaussian_blur.hpp
-    include/bettergimp/filters/unsharp_mask.hpp
-    include/bettergimp/transforms/resize.hpp
-    include/bettergimp/transforms/rotate.hpp
-    include/bettergimp/adjustments/brightness_contrast.hpp
-    include/bettergimp/adjustments/curves.hpp
-    include/bettergimp/adjustments/levels.hpp
-    include/bettergimp/utils/simd_utils.hpp
-    include/bettergimp/utils/memory_pool.hpp
     include/bettergimp/core.hpp
+    include/bettergimp/image/image.hpp
+    include/bettergimp/image/image_processor.hpp
 )
 
 # ====================================
@@ -134,20 +123,20 @@ endif()
 # PYTHON BINDINGS
 # ====================================
 if(BUILD_PYTHON_BINDINGS)
-    pybind11_add_module(bettergimp_py
-        src/python/bindings.cpp
-        src/python/image_bindings.cpp
-        src/python/filter_bindings.cpp
-        src/python/transform_bindings.cpp
-    )
+    # TODO: Create Python binding files
+    # pybind11_add_module(bettergimp_py
+    #     src/python_bindings/bindings.cpp
+    # )
+    # 
+    # target_link_libraries(bettergimp_py PRIVATE bettergimp_core)
+    # 
+    # # Set properties for Python module
+    # set_target_properties(bettergimp_py PROPERTIES
+    #     CXX_VISIBILITY_PRESET "hidden"
+    #     INTERPROCEDURAL_OPTIMIZATION TRUE
+    # )
     
-    target_link_libraries(bettergimp_py PRIVATE bettergimp_core)
-    
-    # Set properties for Python module
-    set_target_properties(bettergimp_py PROPERTIES
-        CXX_VISIBILITY_PRESET "hidden"
-        INTERPROCEDURAL_OPTIMIZATION TRUE
-    )
+    message(STATUS "Python bindings will be implemented in next phase")
 endif()
 
 # ====================================
@@ -156,19 +145,7 @@ endif()
 if(BUILD_TESTING)
     # Test configuration
     set(TEST_SOURCES
-        tests/test_main.cpp
-        tests/image/test_image.cpp
-        tests/image/test_image_loader.cpp
-        tests/image/test_image_processor.cpp
-        tests/filters/test_gaussian_blur.cpp
-        tests/filters/test_unsharp_mask.cpp
-        tests/transforms/test_resize.cpp
-        tests/transforms/test_rotate.cpp
-        tests/adjustments/test_brightness_contrast.cpp
-        tests/adjustments/test_curves.cpp
-        tests/adjustments/test_levels.cpp
-        tests/utils/test_simd_utils.cpp
-        tests/performance/test_performance.cpp
+        tests/test_core.cpp
     )
     
     add_executable(bettergimp_tests ${TEST_SOURCES})

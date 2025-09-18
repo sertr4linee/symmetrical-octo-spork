@@ -1,6 +1,8 @@
 #include "bettergimp/core.hpp"
 #include <tbb/global_control.h>
 #include <iostream>
+#include <thread>
+#include <memory>
 
 namespace bettergimp {
 
