@@ -1,6 +1,6 @@
 # better gimp
 
-``
+```
 ┌─────────────┐    ┌──────────────┐    ┌────────────┐
 │ Electron UI │◄──►│ Python API   │◄──►│ C++ Core   │
 │             │    │              │    │            │
@@ -15,4 +15,4 @@
 │ Local       │    │ Preferences  │    │ Image      │
 │ Storage     │    │ Database     │    │ Buffers    │
 └─────────────┘    └──────────────┘    └────────────┘
-``
+```
