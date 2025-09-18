@@ -223,11 +223,12 @@ install(DIRECTORY include/
 )
 
 # Install Python module
-if(BUILD_PYTHON_BINDINGS)
-    install(TARGETS bettergimp_py
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/python
-    )
-endif()
+# TODO: Uncomment when bettergimp_py target is created
+# if(BUILD_PYTHON_BINDINGS)
+#     install(TARGETS bettergimp_py
+#         DESTINATION ${CMAKE_INSTALL_PREFIX}/python
+#     )
+# endif()
 
 # Export targets
 install(EXPORT bettergimp-targets
