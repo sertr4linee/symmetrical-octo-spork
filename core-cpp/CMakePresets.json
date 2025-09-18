@@ -1,0 +1,137 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 20,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "BUILD_TESTING": "OFF",
+                "BUILD_BENCHMARKS": "OFF",
+                "ENABLE_SIMD": "ON",
+                "BUILD_PYTHON_BINDINGS": "ON"
+            }
+        },
+        {
+            "name": "linux-release",
+            "inherits": "base",
+            "displayName": "Linux Release",
+            "description": "Release build for Linux x64",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++",
+                "CMAKE_BUILD_TYPE": "Release"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "hostOS": ["Linux"]
+                }
+            }
+        },
+        {
+            "name": "macos-release",
+            "inherits": "base", 
+            "displayName": "macOS Intel Release",
+            "description": "Release build for macOS Intel x64",
+            "cacheVariables": {
+                "CMAKE_OSX_ARCHITECTURES": "x86_64",
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "10.15"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "hostOS": ["macOS"]
+                }
+            }
+        },
+        {
+            "name": "macos-arm-release",
+            "inherits": "base",
+            "displayName": "macOS ARM Release", 
+            "description": "Release build for macOS Apple Silicon ARM64",
+            "cacheVariables": {
+                "CMAKE_OSX_ARCHITECTURES": "arm64",
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "11.0"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "hostOS": ["macOS"]
+                }
+            }
+        },
+        {
+            "name": "windows-release",
+            "inherits": "base",
+            "displayName": "Windows Release",
+            "description": "Release build for Windows x64",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "cl",
+                "CMAKE_CXX_COMPILER": "cl"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "hostOS": ["Windows"]
+                }
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "linux-release",
+            "configurePreset": "linux-release",
+            "displayName": "Linux Release Build",
+            "configuration": "Release"
+        },
+        {
+            "name": "macos-release", 
+            "configurePreset": "macos-release",
+            "displayName": "macOS Intel Release Build",
+            "configuration": "Release"
+        },
+        {
+            "name": "macos-arm-release",
+            "configurePreset": "macos-arm-release", 
+            "displayName": "macOS ARM Release Build",
+            "configuration": "Release"
+        },
+        {
+            "name": "windows-release",
+            "configurePreset": "windows-release",
+            "displayName": "Windows Release Build", 
+            "configuration": "Release"
+        }
+    ],
+    "packagePresets": [
+        {
+            "name": "linux-release",
+            "configurePreset": "linux-release",
+            "displayName": "Linux Release Package",
+            "generators": ["DEB", "RPM", "TGZ"]
+        },
+        {
+            "name": "macos-release",
+            "configurePreset": "macos-release", 
+            "displayName": "macOS Intel Release Package",
+            "generators": ["productbuild"]
+        },
+        {
+            "name": "macos-arm-release",
+            "configurePreset": "macos-arm-release",
+            "displayName": "macOS ARM Release Package", 
+            "generators": ["productbuild"]
+        },
+        {
+            "name": "windows-release",
+            "configurePreset": "windows-release",
+            "displayName": "Windows Release Package",
+            "generators": ["NSIS", "ZIP"]
+        }
+    ]
+}

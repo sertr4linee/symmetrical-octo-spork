@@ -1,0 +1,38 @@
+{
+  "name": "bettergimp-core",
+  "version": "0.1.0",
+  "description": "High-performance C++ core for Better GIMP image editor",
+  "homepage": "https://github.com/sertr4linee/bettergimp",
+  "dependencies": [
+    {
+      "name": "opencv4",
+      "version>=": "4.8.0",
+      "features": ["contrib", "dnn", "imgproc", "imgcodecs", "highgui"]
+    },
+    {
+      "name": "tbb",
+      "version>=": "2021.5.0"
+    },
+    {
+      "name": "eigen3",
+      "version>=": "3.4.0"
+    },
+    {
+      "name": "pybind11",
+      "version>=": "2.11.0"
+    },
+    {
+      "name": "fmt",
+      "version>=": "10.0.0"
+    },
+    {
+      "name": "spdlog",
+      "version>=": "1.12.0"
+    },
+    {
+      "name": "nlohmann-json",
+      "version>=": "3.11.0"
+    }
+  ],
+  "builtin-baseline": "2024.07.12"
+}

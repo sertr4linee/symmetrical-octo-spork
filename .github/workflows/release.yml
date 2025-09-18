@@ -1,0 +1,182 @@
+name: Release Management
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    # Weekly release check every Sunday at 00:00 UTC
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+
+jobs:
+  check-for-release:
+    name: Check for Release
+    runs-on: ubuntu-22.04
+    outputs:
+      should_release: ${{ steps.check.outputs.should_release }}
+      next_version: ${{ steps.check.outputs.next_version }}
+      changelog: ${{ steps.check.outputs.changelog }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check for Changes
+        id: check
+        run: |
+          # Get latest tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Latest tag: $LATEST_TAG"
+          
+          # Count commits since latest tag
+          COMMITS_SINCE=$(git rev-list ${LATEST_TAG}..HEAD --count)
+          echo "Commits since latest tag: $COMMITS_SINCE"
+          
+          # Check if we should release
+          SHOULD_RELEASE="false"
+          if [ "$COMMITS_SINCE" -gt 0 ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            SHOULD_RELEASE="true"
+          fi
+          
+          echo "should_release=$SHOULD_RELEASE" >> $GITHUB_OUTPUT
+          
+          # Calculate next version
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            RELEASE_TYPE="${{ github.event.inputs.release_type }}"
+          else
+            # Auto-determine release type based on commit messages
+            if git log ${LATEST_TAG}..HEAD --oneline | grep -E "BREAKING CHANGE|breaking change"; then
+              RELEASE_TYPE="major"
+            elif git log ${LATEST_TAG}..HEAD --oneline | grep -E "feat|feature"; then
+              RELEASE_TYPE="minor"
+            else
+              RELEASE_TYPE="patch"
+            fi
+          fi
+          
+          # Calculate next version
+          CURRENT_VERSION=$(echo $LATEST_TAG | sed 's/v//')
+          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          
+          case $RELEASE_TYPE in
+            major)
+              NEXT_VERSION="v$((major + 1)).0.0"
+              ;;
+            minor)
+              NEXT_VERSION="v${major}.$((minor + 1)).0"
+              ;;
+            patch)
+              NEXT_VERSION="v${major}.${minor}.$((patch + 1))"
+              ;;
+            prerelease)
+              NEXT_VERSION="v${major}.${minor}.$((patch + 1))-rc.1"
+              ;;
+          esac
+          
+          echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+          echo "Next version: $NEXT_VERSION"
+          
+          # Generate changelog
+          CHANGELOG=$(git log ${LATEST_TAG}..HEAD --pretty=format:"- %s" --no-merges)
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+  create-release:
+    name: Create Release
+    needs: check-for-release
+    runs-on: ubuntu-22.04
+    if: needs.check-for-release.outputs.should_release == 'true'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Version Files
+        run: |
+          VERSION="${{ needs.check-for-release.outputs.next_version }}"
+          VERSION_NUM=$(echo $VERSION | sed 's/v//')
+          
+          # Update package.json in frontend
+          if [ -f "frontend-electron/package.json" ]; then
+            sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION_NUM\"/" frontend-electron/package.json
+          fi
+          
+          # Update setup.py in backend
+          if [ -f "backend-python/setup.py" ]; then
+            sed -i "s/version=\".*\"/version=\"$VERSION_NUM\"/" backend-python/setup.py
+          fi
+          
+          # Update CMakeLists.txt in core
+          if [ -f "core-cpp/CMakeLists.txt" ]; then
+            sed -i "s/VERSION [0-9]\+\.[0-9]\+\.[0-9]\+/VERSION $VERSION_NUM/" core-cpp/CMakeLists.txt
+          fi
+
+      - name: Update Changelog
+        run: |
+          VERSION="${{ needs.check-for-release.outputs.next_version }}"
+          DATE=$(date +%Y-%m-%d)
+          
+          # Create or update CHANGELOG.md
+          if [ ! -f "CHANGELOG.md" ]; then
+            echo "# Changelog" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+          fi
+          
+          # Prepend new version to changelog
+          {
+            echo "# Changelog"
+            echo ""
+            echo "## [$VERSION] - $DATE"
+            echo ""
+            echo "${{ needs.check-for-release.outputs.changelog }}"
+            echo ""
+            tail -n +3 CHANGELOG.md
+          } > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+
+      - name: Commit Version Bump
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "chore: bump version to ${{ needs.check-for-release.outputs.next_version }}" || exit 0
+          git push
+
+      - name: Create Git Tag
+        run: |
+          git tag ${{ needs.check-for-release.outputs.next_version }}
+          git push origin ${{ needs.check-for-release.outputs.next_version }}
+
+  trigger-build-deploy:
+    name: Trigger Build and Deploy
+    needs: [check-for-release, create-release]
+    runs-on: ubuntu-22.04
+    if: needs.check-for-release.outputs.should_release == 'true'
+
+    steps:
+      - name: Trigger Build Workflow
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: release-created
+          client-payload: |
+            {
+              "version": "${{ needs.check-for-release.outputs.next_version }}",
+              "changelog": "${{ needs.check-for-release.outputs.changelog }}"
+            }
