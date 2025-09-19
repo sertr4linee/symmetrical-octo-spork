@@ -81,6 +81,20 @@ public:
     // Format conversion
     void convertTo(int type, double alpha = 1.0, double beta = 0.0);
     
+    // Color space conversions
+    Image convertColorSpace(int code) const;
+    Image toRGB() const;
+    Image toBGR() const;
+    Image toGray() const;
+    Image toHSV() const;
+    Image toLAB() const;
+    
+    // Bit depth operations
+    Image to8Bit() const;
+    Image to16Bit() const;
+    Image to32Bit() const;
+    int bitDepth() const;
+    
 private:
     cv::Mat data_;
 };

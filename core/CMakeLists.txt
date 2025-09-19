@@ -146,6 +146,7 @@ if(BUILD_TESTING)
     # Test configuration
     set(TEST_SOURCES
         tests/test_core.cpp
+        tests/test_image_advanced.cpp
     )
     
     add_executable(bettergimp_tests ${TEST_SOURCES})
@@ -204,6 +205,25 @@ if(BUILD_BENCHMARKS)
                 ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks
         )
     endforeach()
+endif()
+
+# ====================================
+# DEMO APPLICATION
+# ====================================
+option(BUILD_DEMO "Build demo application" ON)
+
+if(BUILD_DEMO)
+    add_executable(image_processing_demo demo/image_processing_demo.cpp)
+    
+    target_link_libraries(image_processing_demo
+        PRIVATE
+            bettergimp_core
+    )
+    
+    target_include_directories(image_processing_demo
+        PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/demo
+    )
 endif()
 
 # ====================================
