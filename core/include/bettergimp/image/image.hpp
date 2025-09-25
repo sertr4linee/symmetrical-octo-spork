@@ -6,23 +6,9 @@
 
 namespace bettergimp {
 
-/**
- * @brief Core image class for Better GIMP
- * 
- * This class provides a high-level interface for image manipulation,
- * wrapping OpenCV's cv::Mat with additional functionality.
- */
 class Image {
 public:
-    /**
-     * @brief Default constructor - creates empty image
-     */
     Image();
-    
-    /**
-     * @brief Constructor from OpenCV Mat
-     * @param mat OpenCV matrix
-     */
     explicit Image(const cv::Mat& mat);
     
     /**
