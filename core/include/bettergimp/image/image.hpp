@@ -25,22 +25,22 @@ public:
     bool empty() const;
     size_t dataSize() const;
     
-    // Data access
+    // data access
     cv::Mat& data();
     const cv::Mat& data() const;
     
-    // Basic operations
+    // bacis operations
     Image clone() const;
     void copyTo(Image& dst) const;
     
-    // File I/O
+    // file I/O
     bool load(const std::string& filename);
     bool save(const std::string& filename) const;
     
-    // Format conversion
+    // format conversion
     void convertTo(int type, double alpha = 1.0, double beta = 0.0);
     
-    // Color space conversions
+    // color space conversions
     Image convertColorSpace(int code) const;
     Image toRGB() const;
     Image toBGR() const;
@@ -48,7 +48,7 @@ public:
     Image toHSV() const;
     Image toLAB() const;
     
-    // Bit depth operations
+    // bit operations
     Image to8Bit() const;
     Image to16Bit() const;
     Image to32Bit() const;
@@ -58,4 +58,4 @@ private:
     cv::Mat data_;
 };
 
-} // namespace bettergimp
+}

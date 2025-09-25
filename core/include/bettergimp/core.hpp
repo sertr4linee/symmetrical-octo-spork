@@ -1,11 +1,5 @@
 #pragma once
 
-/**
- * @file core.hpp
- * @brief Main header file for Better GIMP Core library
- * @version 0.1.0
- */
-
 #include <opencv2/opencv.hpp>
 #include <tbb/tbb.h>
 #include <Eigen/Dense>
