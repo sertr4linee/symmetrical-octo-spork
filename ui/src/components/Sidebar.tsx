@@ -20,10 +20,13 @@ const Sidebar: React.FC<SidebarProps> = ({ side }) => {
           <h3 className="text-sm font-medium text-muted-foreground mb-3">Tools</h3>
           
           <div className="grid grid-cols-2 gap-2">
-            {['Select', 'Brush', 'Eraser', 'Text', 'Rectangle', 'Circle', 'Line', 'Eyedropper'].map((tool) => (
+            {['select', 'brush', 'eraser', 'text', 'rectangle', 'circle', 'line', 'eyedropper'].map((tool) => (
               <button
                 key={tool}
-                className="p-3 rounded border border-border hover:bg-accent hover:text-accent-foreground text-sm transition-colors"
+                onClick={() => updateCanvasState({ tool })}
+                className={`p-3 rounded border border-border hover:bg-accent hover:text-accent-foreground text-sm transition-colors capitalize ${
+                  canvas.tool === tool ? 'bg-primary text-primary-foreground' : ''
+                }`}
               >
                 {tool}
               </button>
@@ -39,8 +42,11 @@ const Sidebar: React.FC<SidebarProps> = ({ side }) => {
                   type="range"
                   min="1"
                   max="100"
+                  value={canvas.brushSize}
+                  onChange={(e) => updateCanvasState({ brushSize: Number(e.target.value) })}
                   className="w-full mt-1"
                 />
+                <div className="text-xs text-center mt-1">{canvas.brushSize}px</div>
               </div>
               <div>
                 <label className="text-xs text-muted-foreground">Opacity</label>
@@ -48,8 +54,11 @@ const Sidebar: React.FC<SidebarProps> = ({ side }) => {
                   type="range"
                   min="0"
                   max="100"
+                  value={canvas.brushOpacity * 100}
+                  onChange={(e) => updateCanvasState({ brushOpacity: Number(e.target.value) / 100 })}
                   className="w-full mt-1"
                 />
+                <div className="text-xs text-center mt-1">{Math.round(canvas.brushOpacity * 100)}%</div>
               </div>
             </div>
           </div>

@@ -1,7 +1,3 @@
-"""
-Endpoints pour la gestion des images et traitement
-"""
-
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends
 from fastapi.responses import StreamingResponse
 from typing import List, Optional
