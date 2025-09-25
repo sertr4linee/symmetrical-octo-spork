@@ -1,7 +1,3 @@
-"""
-Modèles de données pour les projets Better GIMP
-"""
-
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
@@ -9,7 +5,6 @@ from uuid import uuid4
 
 
 class ProjectBase(BaseModel):
-    """Modèle de base pour un projet"""
     name: str = Field(..., min_length=1, max_length=255, description="Nom du projet")
     description: Optional[str] = Field(None, max_length=1000, description="Description du projet")
     width: int = Field(..., gt=0, description="Largeur du canvas en pixels")
@@ -19,12 +14,10 @@ class ProjectBase(BaseModel):
 
 
 class ProjectCreate(ProjectBase):
-    """Modèle pour créer un nouveau projet"""
     pass
 
 
 class ProjectUpdate(BaseModel):
-    """Modèle pour mettre à jour un projet"""
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     description: Optional[str] = Field(None, max_length=1000)
     width: Optional[int] = Field(None, gt=0)
@@ -34,7 +27,6 @@ class ProjectUpdate(BaseModel):
 
 
 class Project(ProjectBase):
-    """Modèle complet d'un projet"""
     id: str = Field(default_factory=lambda: str(uuid4()), description="Identifiant unique du projet")
     created_at: datetime = Field(default_factory=datetime.utcnow, description="Date de création")
     updated_at: datetime = Field(default_factory=datetime.utcnow, description="Date de dernière modification")
@@ -61,7 +53,6 @@ class Project(ProjectBase):
 
 
 class ProjectSummary(BaseModel):
-    """Résumé d'un projet pour les listes"""
     id: str
     name: str
     description: Optional[str]

@@ -1,7 +1,3 @@
-"""
-Configuration de la base de données et modèles SQLAlchemy
-"""
-
 from sqlalchemy import create_engine, Column, String, Integer, DateTime, Text, LargeBinary, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -10,16 +6,14 @@ from datetime import datetime
 import os
 from pathlib import Path
 
-# Configuration de la base de données
 DATABASE_DIR = Path(__file__).parent.parent.parent / "data"
 DATABASE_DIR.mkdir(exist_ok=True)
 DATABASE_URL = f"sqlite:///{DATABASE_DIR}/bettergimp.db"
 
-# Engine SQLAlchemy
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False},  # Pour SQLite
-    echo=True  # Log des requêtes SQL en développement
+    connect_args={"check_same_thread": False},
+    echo=True
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -27,7 +21,6 @@ Base = declarative_base()
 
 
 class ProjectDB(Base):
-    """Modèle de base de données pour les projets"""
     __tablename__ = "projects"
     
     id = Column(String, primary_key=True, index=True)
@@ -44,7 +37,6 @@ class ProjectDB(Base):
 
 
 class ImageDB(Base):
-    """Modèle de base de données pour les images"""
     __tablename__ = "images"
     
     id = Column(String, primary_key=True, index=True)
@@ -63,13 +55,12 @@ class ImageDB(Base):
 
 
 class ImageHistoryDB(Base):
-    """Modèle de base de données pour l'historique des images"""
     __tablename__ = "image_history"
     
     id = Column(String, primary_key=True, index=True)
     image_id = Column(String, nullable=False, index=True)
     operation = Column(String(100), nullable=False)
-    parameters = Column(Text, nullable=True)  # JSON sérialisé
+    parameters = Column(Text, nullable=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
     user_id = Column(String, nullable=True)
 
@@ -77,7 +68,6 @@ class ImageHistoryDB(Base):
 async def init_db():
     """Initialiser la base de données"""
     try:
-        # Créer toutes les tables
         Base.metadata.create_all(bind=engine)
         print("✅ Database tables created successfully")
     except Exception as e:
@@ -86,7 +76,6 @@ async def init_db():
 
 
 def get_db():
-    """Obtenir une session de base de données"""
     db = SessionLocal()
     try:
         yield db

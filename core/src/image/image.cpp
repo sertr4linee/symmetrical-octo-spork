@@ -111,7 +111,7 @@ Image Image::toRGB() const {
     } else if (channels() == 1) {
         return convertColorSpace(cv::COLOR_GRAY2RGB);
     }
-    return clone(); // Already RGB or unsupported format
+    return clone();
 }
 
 Image Image::toBGR() const {
@@ -120,7 +120,7 @@ Image Image::toBGR() const {
     } else if (channels() == 1) {
         return convertColorSpace(cv::COLOR_GRAY2BGR);
     }
-    return clone(); // Already BGR or unsupported format
+    return clone();
 }
 
 Image Image::toGray() const {
@@ -129,7 +129,7 @@ Image Image::toGray() const {
     } else if (channels() == 4) {
         return convertColorSpace(cv::COLOR_BGRA2GRAY);
     }
-    return clone(); // Already grayscale
+    return clone();
 }
 
 Image Image::toHSV() const {
@@ -154,9 +154,9 @@ Image Image::to8Bit() const {
     
     double scale = 1.0;
     if (data_.depth() == CV_16U) {
-        scale = 1.0 / 257.0; // 65535 -> 255
+        scale = 1.0 / 257.0;
     } else if (data_.depth() == CV_32F) {
-        scale = 255.0; // Assuming float is in [0,1] range
+        scale = 255.0;
     }
     
     data_.convertTo(result.data_, CV_8UC(channels()), scale);
@@ -171,9 +171,9 @@ Image Image::to16Bit() const {
     
     double scale = 1.0;
     if (data_.depth() == CV_8U) {
-        scale = 257.0; // 255 -> 65535
+        scale = 257.0;
     } else if (data_.depth() == CV_32F) {
-        scale = 65535.0; // Assuming float is in [0,1] range
+        scale = 65535.0;
     }
     
     data_.convertTo(result.data_, CV_16UC(channels()), scale);
@@ -188,9 +188,9 @@ Image Image::to32Bit() const {
     
     double scale = 1.0;
     if (data_.depth() == CV_8U) {
-        scale = 1.0 / 255.0; // 255 -> 1.0
+        scale = 1.0 / 255.0;
     } else if (data_.depth() == CV_16U) {
-        scale = 1.0 / 65535.0; // 65535 -> 1.0
+        scale = 1.0 / 65535.0;
     }
     
     data_.convertTo(result.data_, CV_32FC(channels()), scale);
@@ -215,4 +215,4 @@ int Image::bitDepth() const {
     }
 }
 
-} // namespace bettergimp
+}

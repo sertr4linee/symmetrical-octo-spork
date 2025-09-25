@@ -10,9 +10,16 @@ const ElectronWrapper: React.FC<ElectronWrapperProps> = ({ children }) => {
   const [isReady, setIsReady] = useState(false);
   const [isElectron, setIsElectron] = useState(false);
 
+  // Always call useEffect hooks in the same order
   useEffect(() => {
-    // Check if we're in Electron
-    const checkElectron = () => {
+    let mounted = true;
+    
+    const initializeApp = async () => {
+      // Small delay to ensure DOM is ready
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      if (!mounted) return;
+      
       if (typeof window !== 'undefined') {
         const inElectron = window.electronAPI !== undefined;
         setIsElectron(inElectron);
@@ -20,6 +27,8 @@ const ElectronWrapper: React.FC<ElectronWrapperProps> = ({ children }) => {
         if (inElectron) {
           // Wait for Electron APIs to be ready
           const checkReady = () => {
+            if (!mounted) return;
+            
             if (isElectronAPIReady()) {
               setIsReady(true);
             } else {
@@ -31,24 +40,30 @@ const ElectronWrapper: React.FC<ElectronWrapperProps> = ({ children }) => {
           // We're in browser mode (development)
           setIsReady(true);
         }
+      } else {
+        // Fallback for SSR or other edge cases
+        setIsReady(true);
       }
     };
 
-    // Small delay to ensure DOM is ready
-    setTimeout(checkElectron, 100);
+    initializeApp();
+    
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  if (!isReady) {
-    return <LoadingScreen />;
-  }
-
-  // Add a class to indicate if we're in Electron or browser
+  // Always call this useEffect, regardless of state
   useEffect(() => {
     if (typeof document !== 'undefined') {
       document.body.classList.toggle('electron-mode', isElectron);
       document.body.classList.toggle('browser-mode', !isElectron);
     }
   }, [isElectron]);
+
+  if (!isReady) {
+    return <LoadingScreen />;
+  }
 
   return <>{children}</>;
 };

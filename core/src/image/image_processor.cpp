@@ -18,8 +18,7 @@ Image ImageProcessor::adjustBrightness(const Image& input, double brightness) {
     Image result = input.clone();
     cv::Mat& data = result.data();
     
-    // Convert brightness from [-100, 100] to additive value
-    double beta = brightness * 2.55; // Scale to [0, 255] range
+    double beta = brightness * 2.55;
     
     data.convertTo(data, -1, 1.0, beta);
     return result;
@@ -29,7 +28,6 @@ Image ImageProcessor::adjustContrast(const Image& input, double contrast) {
     Image result = input.clone();
     cv::Mat& data = result.data();
     
-    // Convert contrast from [-100, 100] to multiplicative factor
     double alpha = (contrast + 100.0) / 100.0;
     
     data.convertTo(data, -1, alpha, 0.0);
@@ -58,7 +56,6 @@ Image ImageProcessor::adjustSaturation(const Image& input, double saturation) {
     std::vector<cv::Mat> channels;
     cv::split(hsv_data, channels);
     
-    // Adjust saturation channel (index 1)
     double factor = (saturation + 100.0) / 100.0;
     channels[1].convertTo(channels[1], -1, factor);
     
@@ -77,7 +74,6 @@ Image ImageProcessor::adjustHue(const Image& input, double hue_shift) {
     std::vector<cv::Mat> channels;
     cv::split(hsv_data, channels);
     
-    // Adjust hue channel (index 0) - OpenCV uses 0-179 for hue
     cv::add(channels[0], cv::Scalar(hue_shift * 179.0 / 360.0), channels[0]);
     
     cv::merge(channels, hsv_data);
@@ -95,10 +91,7 @@ Image ImageProcessor::gaussianBlur(const Image& input, double sigma_x, double si
 }
 
 Image ImageProcessor::unsharpMask(const Image& input, double sigma, double strength, double threshold) {
-    // Create blurred version
     Image blurred = gaussianBlur(input, sigma);
-    
-    // Calculate unsharp mask
     Image result = input.clone();
     cv::Mat& original = result.data();
     const cv::Mat& blur = blurred.data();
@@ -106,7 +99,6 @@ Image ImageProcessor::unsharpMask(const Image& input, double sigma, double stren
     cv::Mat mask;
     cv::subtract(original, blur, mask);
     
-    // Apply threshold if specified
     if (threshold > 0.0) {
         cv::Mat thresh_mask;
         cv::threshold(cv::abs(mask), thresh_mask, threshold, 1.0, cv::THRESH_BINARY);
@@ -114,14 +106,12 @@ Image ImageProcessor::unsharpMask(const Image& input, double sigma, double stren
         cv::multiply(mask, thresh_mask, mask);
     }
     
-    // Apply strength and add back to original
     cv::addWeighted(original, 1.0, mask, strength, 0.0, original);
     
     return result;
 }
 
 Image ImageProcessor::medianBlur(const Image& input, int kernel_size) {
-    // Ensure kernel size is odd
     if (kernel_size % 2 == 0) {
         kernel_size++;
     }
@@ -197,7 +187,6 @@ cv::Size ImageProcessor::calculateOptimalSize(const cv::Size& original, int max_
 }
 
 double ImageProcessor::calculateOptimalSigma(const cv::Size& size) {
-    // Rule of thumb: sigma should be proportional to image size
     int max_dim = std::max(size.width, size.height);
     return std::max(0.5, max_dim / 1000.0);
 }
@@ -207,16 +196,13 @@ Image ImageProcessor::adjustCurves(const Image& input, const std::vector<cv::Poi
         return input.clone();
     }
     
-    // Create lookup table from curve points
     cv::Mat lut(1, 256, CV_8UC1);
     uchar* lut_data = lut.ptr<uchar>();
     
-    // Interpolate curve points to create full LUT
     for (int i = 0; i < 256; i++) {
         float x = i / 255.0f;
-        float y = x; // Default identity
+        float y = x;
         
-        // Find surrounding points and interpolate
         for (size_t j = 0; j < curve_points.size() - 1; j++) {
             if (x >= curve_points[j].x && x <= curve_points[j + 1].x) {
                 float t = (x - curve_points[j].x) / (curve_points[j + 1].x - curve_points[j].x);
@@ -238,21 +224,14 @@ Image ImageProcessor::adjustLevels(const Image& input, double input_min, double 
     Image result = input.clone();
     cv::Mat& data = result.data();
     
-    // Normalize to [0,1] range
     data.convertTo(data, CV_32F, 1.0/255.0);
     
-    // Apply input levels
     cv::subtract(data, cv::Scalar(input_min / 255.0), data);
     cv::divide(data, cv::Scalar((input_max - input_min) / 255.0), data);
-    
-    // Apply gamma correction
     cv::pow(data, gamma, data);
-    
-    // Apply output levels
     cv::multiply(data, cv::Scalar((output_max - output_min) / 255.0), data);
     cv::add(data, cv::Scalar(output_min / 255.0), data);
     
-    // Convert back to 8-bit
     data.convertTo(data, CV_8U, 255.0);
     
     return result;
@@ -273,7 +252,7 @@ Image ImageProcessor::autoLevels(const Image& input) {
 }
 
 Image ImageProcessor::autoContrast(const Image& input) {
-    return autoLevels(input); // Simple implementation - same as auto levels
+    return autoLevels(input);
 }
 
 bool ImageProcessor::supportedFormat(const std::string& extension) const {
@@ -291,4 +270,4 @@ std::vector<std::string> ImageProcessor::getSupportedFormats() const {
     return {".jpg", ".jpeg", ".png", ".tiff", ".tif", ".bmp", ".webp", ".exr", ".hdr"};
 }
 
-} // namespace bettergimp
+}

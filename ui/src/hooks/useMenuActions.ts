@@ -12,9 +12,10 @@ export const useMenuActions = () => {
   } = useAppStore();
 
   useEffect(() => {
+    // Always set up the effect to maintain hook order consistency
     if (!isElectronAPIReady()) {
-      console.warn('Electron API not available');
-      return;
+      console.warn('Electron API not available, skipping menu setup');
+      return; // Return undefined, not a function
     }
 
     const cleanup = window.electronAPI.onMenuAction((_event, action) => {

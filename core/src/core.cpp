@@ -21,12 +21,10 @@ bool initialize(int num_threads) {
     }
     
     try {
-        // Initialize TBB threading
         if (num_threads <= 0) {
-            // Auto-detect thread count
             num_threads = std::thread::hardware_concurrency();
             if (num_threads <= 0) {
-                num_threads = 4; // Fallback
+                num_threads = 4;
             }
         }
         
@@ -35,7 +33,6 @@ bool initialize(int num_threads) {
             num_threads
         );
         
-        // Initialize OpenCV with optimizations
         cv::setUseOptimized(true);
         cv::setNumThreads(num_threads);
         
@@ -67,4 +64,4 @@ bool isSimdAvailable() {
 #endif
 }
 
-} // namespace bettergimp
+}

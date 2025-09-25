@@ -1,7 +1,3 @@
-"""
-Service métier pour la gestion des projets
-"""
-
 from typing import List, Optional
 from uuid import uuid4
 from sqlalchemy.orm import Session
@@ -12,23 +8,19 @@ from models.project import Project, ProjectCreate, ProjectUpdate
 
 
 class ProjectService:
-    """Service pour gérer les projets"""
     
     def __init__(self, db: Session = Depends(get_db)):
         self.db = db
     
     async def get_projects(self, skip: int = 0, limit: int = 100) -> List[Project]:
-        """Obtenir la liste des projets"""
         db_projects = self.db.query(ProjectDB).offset(skip).limit(limit).all()
         return [self._db_to_model(db_project) for db_project in db_projects]
     
     async def get_project(self, project_id: str) -> Optional[Project]:
-        """Obtenir un projet par son ID"""
         db_project = self.db.query(ProjectDB).filter(ProjectDB.id == project_id).first()
         return self._db_to_model(db_project) if db_project else None
     
     async def create_project(self, project_data: ProjectCreate) -> Project:
-        """Créer un nouveau projet"""
         project_id = str(uuid4())
         
         db_project = ProjectDB(
@@ -48,13 +40,11 @@ class ProjectService:
         return self._db_to_model(db_project)
     
     async def update_project(self, project_id: str, project_data: ProjectUpdate) -> Optional[Project]:
-        """Mettre à jour un projet"""
         db_project = self.db.query(ProjectDB).filter(ProjectDB.id == project_id).first()
         
         if not db_project:
             return None
         
-        # Mettre à jour uniquement les champs fournis
         update_data = project_data.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             setattr(db_project, field, value)
@@ -65,7 +55,6 @@ class ProjectService:
         return self._db_to_model(db_project)
     
     async def delete_project(self, project_id: str) -> bool:
-        """Supprimer un projet"""
         db_project = self.db.query(ProjectDB).filter(ProjectDB.id == project_id).first()
         
         if not db_project:
@@ -82,7 +71,6 @@ class ProjectService:
         return []
     
     def _db_to_model(self, db_project: ProjectDB) -> Project:
-        """Convertir un modèle DB en modèle Pydantic"""
         return Project(
             id=db_project.id,
             name=db_project.name,

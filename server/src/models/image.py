@@ -1,7 +1,3 @@
-"""
-Modèles de données pour les images Better GIMP
-"""
-
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, List
 from datetime import datetime
@@ -31,19 +27,16 @@ class ProcessingOperation(str, Enum):
 
 
 class ImageBase(BaseModel):
-    """Modèle de base pour une image"""
     filename: str = Field(..., min_length=1, description="Nom du fichier")
     content_type: str = Field(..., description="Type MIME de l'image")
     project_id: Optional[str] = Field(None, description="ID du projet parent")
 
 
 class ImageCreate(ImageBase):
-    """Modèle pour créer une nouvelle image"""
     data: bytes = Field(..., description="Données binaires de l'image")
 
 
 class ImageProcess(BaseModel):
-    """Modèle pour traiter une image"""
     operation: ProcessingOperation = Field(..., description="Type d'opération à effectuer")
     parameters: Dict[str, Any] = Field(default_factory=dict, description="Paramètres de l'opération")
     
@@ -60,7 +53,6 @@ class ImageProcess(BaseModel):
 
 
 class Image(ImageBase):
-    """Modèle complet d'une image"""
     id: str = Field(default_factory=lambda: str(uuid4()), description="Identifiant unique")
     width: Optional[int] = Field(None, description="Largeur en pixels")
     height: Optional[int] = Field(None, description="Hauteur en pixels")
@@ -92,7 +84,6 @@ class Image(ImageBase):
 
 
 class ImageHistory(BaseModel):
-    """Historique des modifications d'une image"""
     id: str
     image_id: str
     operation: str
@@ -102,7 +93,6 @@ class ImageHistory(BaseModel):
 
 
 class ImageMetadata(BaseModel):
-    """Métadonnées d'une image"""
     exif: Optional[Dict[str, Any]] = None
     color_profile: Optional[str] = None
     dpi: Optional[int] = None

@@ -21,23 +21,18 @@ from models.database import init_db
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Gestionnaire de cycle de vie de l'application"""
-    print("🚀 Starting Better GIMP Backend API...")
+    print("starting api..")
     
-    # Initialiser la base de données
     await init_db()
-    print("✅ Database initialized")
+    print("db init")
     
-    yield
-    
-    print("🛑 Shutting down Better GIMP Backend API...")
+    print("shutting down api...")
 
 
 def create_app() -> FastAPI:
-    """Créer l'application FastAPI"""
     app = FastAPI(
-        title="Better GIMP API",
-        description="API backend pour l'éditeur d'images Better GIMP",
+        title="bettergimp",
+        description="api pour el famoso simulated",
         version="0.1.0",
         lifespan=lifespan,
         docs_url="/docs",
@@ -45,7 +40,6 @@ def create_app() -> FastAPI:
         openapi_url="/openapi.json"
     )
     
-    # Configuration CORS
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["http://localhost:3000", "http://localhost:8080"],  # Electron/React dev
@@ -54,13 +48,12 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     
-    # Inclure les routes API
     app.include_router(api_router, prefix="/api")
     
     @app.get("/")
     async def root():
         return {
-            "message": "Better GIMP Backend API",
+            "message": "bettergimp",
             "version": "0.1.0",
             "docs": "/docs"
         }
@@ -76,13 +69,12 @@ def main():
     """Point d'entrée principal"""
     app = create_app()
     
-    # Configuration du serveur
     host = os.getenv("HOST", "127.0.0.1")
     port = int(os.getenv("PORT", "8000"))
     reload = os.getenv("RELOAD", "true").lower() == "true"
     
-    print(f"🌐 Server will start on http://{host}:{port}")
-    print(f"📚 API documentation: http://{host}:{port}/docs")
+    print(f"server will start on http://{host}:{port}")
+    print(f" api doc: http://{host}:{port}/docs")
     
     uvicorn.run(
         "main:create_app",
