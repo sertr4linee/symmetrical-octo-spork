@@ -10,41 +10,14 @@ class Image {
 public:
     Image();
     explicit Image(const cv::Mat& mat);
-    
-    /**
-     * @brief Constructor with dimensions and type
-     * @param width Image width
-     * @param height Image height 
-     * @param type OpenCV matrix type (e.g., CV_8UC3)
-     */
     Image(int width, int height, int type);
-    
-    /**
-     * @brief Copy constructor
-     */
     Image(const Image& other);
-    
-    /**
-     * @brief Move constructor
-     */
     Image(Image&& other) noexcept;
-    
-    /**
-     * @brief Copy assignment operator
-     */
     Image& operator=(const Image& other);
-    
-    /**>
-     * @brief Move assignment operator
-     */
     Image& operator=(Image&& other) noexcept;
-    
-    /**
-     * @brief Destructor
-     */
     ~Image() = default;
     
-    // Basic properties
+    // basic properties
     int width() const;
     int height() const;
     int channels() const;
