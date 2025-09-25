@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useAppStore } from '@/store/app';
+import { isElectronAPIReady } from '@/utils';
 
 export const useMenuActions = () => {
   const {
@@ -11,7 +12,7 @@ export const useMenuActions = () => {
   } = useAppStore();
 
   useEffect(() => {
-    if (!window.electronAPI?.onMenuAction) {
+    if (!isElectronAPIReady()) {
       console.warn('Electron API not available');
       return;
     }

@@ -1,8 +1,10 @@
 import React from 'react';
 import { useAppStore } from '@/store/app';
+import { getAppInfo } from '@/utils';
 
 const StatusBar: React.FC = () => {
   const { canvas, currentProject } = useAppStore();
+  const appInfo = getAppInfo();
 
   return (
     <div className="h-6 bg-muted border-t border-border flex items-center justify-between px-4 text-xs text-muted-foreground">
@@ -24,7 +26,7 @@ const StatusBar: React.FC = () => {
       
       <div className="flex items-center space-x-4">
         <span>
-          Better GIMP v{window.appInfo?.version || '0.1.0'}
+          {appInfo.name} v{appInfo.version}
         </span>
         
         <span>

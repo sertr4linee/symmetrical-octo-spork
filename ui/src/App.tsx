@@ -6,8 +6,9 @@ import Sidebar from '@/components/Sidebar';
 import StatusBar from '@/components/StatusBar';
 import LoadingScreen from '@/components/LoadingScreen';
 import ErrorMessage from '@/components/ErrorMessage';
+import ElectronWrapper from '@/components/ElectronWrapper';
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   useMenuActions();
   
   const { isLoading, error } = useAppStore();
@@ -36,6 +37,14 @@ const App: React.FC = () => {
       {/* Bottom Status Bar */}
       <StatusBar />
     </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <ElectronWrapper>
+      <AppContent />
+    </ElectronWrapper>
   );
 };
 
