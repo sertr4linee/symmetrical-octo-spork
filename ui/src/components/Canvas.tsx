@@ -21,25 +21,29 @@ const Canvas: React.FC = () => {
   } = useAppStore();
 
   // Handle wheel zoom
-  const handleWheel = useCallback((opt: fabric.IEvent) => {
+  const handleWheel = useCallback((opt: fabric.IEvent | any) => {
     const e = opt.e as WheelEvent;
     if (e.ctrlKey || e.metaKey) {
       e.preventDefault();
       const canvas = fabricCanvasRef.current;
       if (!canvas) return;
 
-      const delta = e.deltaY;
-      let zoom = canvas.getZoom();
-      zoom *= 0.999 ** delta;
+      // Simple zoom calculation
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      const currentZoom = canvas.getZoom();
+      let newZoom = currentZoom + delta;
       
       // Limit zoom levels
-      if (zoom > 20) zoom = 20;
-      if (zoom < 0.01) zoom = 0.01;
+      if (newZoom > 5) newZoom = 5;
+      if (newZoom < 0.1) newZoom = 0.1;
       
-      setZoom(zoom);
+      setZoom(newZoom);
       
-      const point = new fabric.Point(e.offsetX, e.offsetY);
-      canvas.zoomToPoint(point, zoom);
+      // Use canvas center if no specific point provided
+      const centerX = opt.e?.offsetX || canvas.width! / 2;
+      const centerY = opt.e?.offsetY || canvas.height! / 2;
+      const point = new fabric.Point(centerX, centerY);
+      canvas.zoomToPoint(point, newZoom);
     }
   }, [setZoom]);
 
