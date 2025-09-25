@@ -2,9 +2,16 @@ import React, { useRef, useEffect, useCallback } from 'react';
 import { fabric } from 'fabric';
 import { useAppStore } from '@/store/app';
 
+// Extend fabric.Canvas with custom properties
+interface ExtendedCanvas extends fabric.Canvas {
+  isDragging?: boolean;
+  lastPosX?: number;
+  lastPosY?: number;
+}
+
 const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const fabricCanvasRef = useRef<fabric.Canvas | null>(null);
+  const fabricCanvasRef = useRef<ExtendedCanvas | null>(null);
   
   const { 
     canvas: canvasState, 
@@ -52,21 +59,23 @@ const Canvas: React.FC = () => {
 
   const handleMouseMove = useCallback((opt: fabric.IEvent) => {
     const e = opt.e as MouseEvent;
-    const canvas = fabricCanvasRef.current as any;
+    const canvas = fabricCanvasRef.current;
     if (!canvas || !canvas.isDragging) return;
 
     const vpt = canvas.viewportTransform;
-    vpt[4] += e.clientX - canvas.lastPosX;
-    vpt[5] += e.clientY - canvas.lastPosY;
-    
-    setPan({ x: vpt[4], y: vpt[5] });
-    canvas.requestRenderAll();
-    canvas.lastPosX = e.clientX;
-    canvas.lastPosY = e.clientY;
+    if (vpt && canvas.lastPosX !== undefined && canvas.lastPosY !== undefined) {
+      vpt[4] += e.clientX - canvas.lastPosX;
+      vpt[5] += e.clientY - canvas.lastPosY;
+      
+      setPan({ x: vpt[4], y: vpt[5] });
+      canvas.requestRenderAll();
+      canvas.lastPosX = e.clientX;
+      canvas.lastPosY = e.clientY;
+    }
   }, [setPan]);
 
   const handleMouseUp = useCallback(() => {
-    const canvas = fabricCanvasRef.current as any;
+    const canvas = fabricCanvasRef.current;
     if (!canvas) return;
     
     canvas.isDragging = false;

@@ -17,12 +17,8 @@ router = APIRouter()
 
 @router.post("/upload")
 async def upload_image(
-    # Commenté temporairement pour tester l'API
-    # file: UploadFile = File(...),
-    # project_id: Optional[str] = Form(None),
     image_service: ImageService = Depends()
 ):
-    """Uploader une nouvelle image (endpoint temporaire)"""
     return {"message": "Upload endpoint - à implémenter avec file upload"}
 
 
@@ -31,7 +27,6 @@ async def get_image_info(
     image_id: str,
     image_service: ImageService = Depends()
 ):
-    """Obtenir les informations d'une image"""
     image = await image_service.get_image(image_id)
     if not image:
         raise HTTPException(status_code=404, detail="Image not found")
@@ -45,17 +40,14 @@ async def get_image_preview(
     height: Optional[int] = 300,
     image_service: ImageService = Depends()
 ):
-    """Obtenir un aperçu redimensionné de l'image"""
     image_data = await image_service.get_image_data(image_id)
     if not image_data:
         raise HTTPException(status_code=404, detail="Image not found")
     
-    # Créer un aperçu avec PIL
     try:
         pil_image = PILImage.open(io.BytesIO(image_data.data))
         pil_image.thumbnail((width, height), PILImage.Resampling.LANCZOS)
         
-        # Convertir en bytes
         img_byte_arr = io.BytesIO()
         pil_image.save(img_byte_arr, format='JPEG')
         img_byte_arr.seek(0)
@@ -94,7 +86,6 @@ async def delete_image(
     image_id: str,
     image_service: ImageService = Depends()
 ):
-    """Supprimer une image"""
     success = await image_service.delete_image(image_id)
     if not success:
         raise HTTPException(status_code=404, detail="Image not found")
@@ -106,6 +97,5 @@ async def get_image_history(
     image_id: str,
     image_service: ImageService = Depends()
 ):
-    """Obtenir l'historique des modifications d'une image"""
     history = await image_service.get_image_history(image_id)
     return {"image_id": image_id, "history": history}

@@ -6,7 +6,12 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ side }) => {
-  const { panels, togglePanel } = useAppStore();
+  const { 
+    panels, 
+    togglePanel, 
+    canvas, 
+    updateCanvasState 
+  } = useAppStore();
 
   if (side === 'left') {
     return (

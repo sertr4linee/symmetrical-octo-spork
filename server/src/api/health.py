@@ -1,7 +1,3 @@
-"""
-Endpoints de santé et statut de l'API
-"""
-
 from fastapi import APIRouter
 from datetime import datetime
 import psutil
@@ -12,7 +8,6 @@ router = APIRouter()
 
 @router.get("/status")
 async def get_api_status():
-    """Obtenir le statut détaillé de l'API"""
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
@@ -24,7 +19,6 @@ async def get_api_status():
 
 @router.get("/system")
 async def get_system_info():
-    """Obtenir les informations système"""
     try:
         memory = psutil.virtual_memory()
         disk = psutil.disk_usage('/')
