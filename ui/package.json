@@ -16,13 +16,16 @@
     "vite": "^5.4.20"
   },
   "dependencies": {
+    "@types/fabric": "^5.3.10",
     "@types/react": "^18.3.24",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.21",
+    "fabric": "^5.5.2",
     "postcss": "^8.5.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "zustand": "^4.5.7"
   }
 }
