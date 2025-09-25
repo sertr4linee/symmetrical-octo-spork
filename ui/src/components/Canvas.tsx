@@ -104,6 +104,25 @@ const Canvas: React.FC = () => {
       canvas.on('mouse:move', handleMouseMove);
       canvas.on('mouse:up', handleMouseUp);
 
+      // Also add wheel listener directly to canvas element for better compatibility
+      const canvasElement = canvasRef.current;
+      if (canvasElement) {
+        canvasElement.addEventListener('wheel', (e: WheelEvent) => {
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            const rect = canvasElement.getBoundingClientRect();
+            const opt = {
+              e: {
+                ...e,
+                offsetX: e.clientX - rect.left,
+                offsetY: e.clientY - rect.top,
+              }
+            };
+            handleWheel(opt as any);
+          }
+        }, { passive: false });
+      }
+
       fabricCanvasRef.current = canvas;
     }
 
@@ -165,9 +184,27 @@ const Canvas: React.FC = () => {
           )}
         </div>
         
-        {/* Zoom indicator */}
-        <div className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
-          {Math.round(canvasState.zoom * 100)}%
+        {/* Zoom controls */}
+        <div className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs flex items-center gap-2">
+          <button 
+            onClick={() => setZoom(Math.max(0.1, canvasState.zoom - 0.1))}
+            className="hover:bg-white/20 px-1 rounded"
+          >
+            -
+          </button>
+          <span>{Math.round(canvasState.zoom * 100)}%</span>
+          <button 
+            onClick={() => setZoom(Math.min(5, canvasState.zoom + 0.1))}
+            className="hover:bg-white/20 px-1 rounded"
+          >
+            +
+          </button>
+          <button 
+            onClick={() => setZoom(1)}
+            className="hover:bg-white/20 px-1 rounded ml-1"
+          >
+            100%
+          </button>
         </div>
       </div>
     </div>

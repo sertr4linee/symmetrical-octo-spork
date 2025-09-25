@@ -15,7 +15,7 @@ const Sidebar: React.FC<SidebarProps> = ({ side }) => {
 
   if (side === 'left') {
     return (
-      <div className={`w-64 bg-card border-r border-border flex-shrink-0 ${panels.tools ? 'block' : 'hidden'}`}>
+      <div className="w-full h-full flex flex-col">
         <div className="p-4">
           <h3 className="text-sm font-medium text-muted-foreground mb-3">Tools</h3>
           
@@ -68,7 +68,7 @@ const Sidebar: React.FC<SidebarProps> = ({ side }) => {
   }
 
   return (
-    <div className="w-80 bg-card border-l border-border flex-shrink-0">
+    <div className="w-full h-full">
       <div className="flex flex-col h-full">
         {/* Layers Panel */}
         {panels.layers && (

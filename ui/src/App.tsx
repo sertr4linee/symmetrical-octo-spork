@@ -7,11 +7,12 @@ import StatusBar from '@/components/StatusBar';
 import LoadingScreen from '@/components/LoadingScreen';
 import ErrorMessage from '@/components/ErrorMessage';
 import ElectronWrapper from '@/components/ElectronWrapper';
+import ResizablePanel from '@/components/ResizablePanel';
 
 const AppContent: React.FC = () => {
   useMenuActions();
   
-  const { isLoading, error } = useAppStore();
+  const { isLoading, error, panels } = useAppStore();
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -23,7 +24,15 @@ const AppContent: React.FC = () => {
       
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar - Tools */}
-        <Sidebar side="left" />
+        <ResizablePanel 
+          side="left" 
+          isVisible={panels.tools}
+          defaultWidth={264}
+          minWidth={200}
+          maxWidth={400}
+        >
+          <Sidebar side="left" />
+        </ResizablePanel>
         
         {/* Main Canvas Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
@@ -31,7 +40,15 @@ const AppContent: React.FC = () => {
         </div>
         
         {/* Right Sidebar - Layers, Properties */}
-        <Sidebar side="right" />
+        <ResizablePanel 
+          side="right" 
+          isVisible={panels.layers || panels.properties}
+          defaultWidth={300}
+          minWidth={250}
+          maxWidth={500}
+        >
+          <Sidebar side="right" />
+        </ResizablePanel>
       </div>
       
       {/* Bottom Status Bar */}
