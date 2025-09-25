@@ -6,7 +6,6 @@ from enum import Enum
 
 
 class ImageFormat(str, Enum):
-    """Formats d'image supportés"""
     JPEG = "jpeg"
     PNG = "png"
     TIFF = "tiff"
@@ -15,7 +14,6 @@ class ImageFormat(str, Enum):
 
 
 class ProcessingOperation(str, Enum):
-    """Opérations de traitement disponibles"""
     BRIGHTNESS = "brightness"
     CONTRAST = "contrast"
     BRIGHTNESS_CONTRAST = "brightness_contrast"

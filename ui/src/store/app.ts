@@ -23,6 +23,9 @@ interface AppState {
   setCurrentProject: (project: Project | null) => void;
   setProjects: (projects: Project[]) => void;
   updateCanvasState: (updates: Partial<CanvasState>) => void;
+  setZoom: (zoom: number) => void;
+  setPan: (pan: { x: number; y: number }) => void;
+  setCurrentTool: (tool: string) => void;
   togglePanel: (panel: keyof PanelState) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -69,6 +72,22 @@ export const useAppStore = create<AppState>()(
       updateCanvasState: (updates) =>
         set((state) => ({
           canvas: { ...state.canvas, ...updates },
+        })),
+
+      // Canvas-specific actions
+      setZoom: (zoom: number) =>
+        set((state) => ({
+          canvas: { ...state.canvas, zoom },
+        })),
+
+      setPan: (pan: { x: number; y: number }) =>
+        set((state) => ({
+          canvas: { ...state.canvas, pan },
+        })),
+
+      setCurrentTool: (tool: string) =>
+        set((state) => ({
+          canvas: { ...state.canvas, tool },
         })),
       
       togglePanel: (panel) =>

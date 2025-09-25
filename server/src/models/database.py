@@ -49,7 +49,7 @@ class ImageDB(Base):
     color_mode = Column(String(50), nullable=True)
     file_size = Column(Integer, default=0)
     checksum = Column(String(32), nullable=True)
-    data = Column(LargeBinary, nullable=False)  # Stockage des données binaires
+    data = Column(LargeBinary, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -66,7 +66,6 @@ class ImageHistoryDB(Base):
 
 
 async def init_db():
-    """Initialiser la base de données"""
     try:
         Base.metadata.create_all(bind=engine)
         print("Database tables created successfully")

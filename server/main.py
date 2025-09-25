@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""
-Better GIMP - Backend API Server
-Point d'entrée principal de l'API FastAPI
-"""
 
 import uvicorn
 from fastapi import FastAPI
@@ -12,7 +8,6 @@ import os
 import sys
 from pathlib import Path
 
-# Ajouter le répertoire src au path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from api.router import api_router
@@ -42,7 +37,7 @@ def create_app() -> FastAPI:
     
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:3000", "http://localhost:8080"],  # Electron/React dev
+        allow_origins=["http://localhost:3000", "http://localhost:8080"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
