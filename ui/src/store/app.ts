@@ -34,7 +34,7 @@ interface AppState {
 
 export const useAppStore = create<AppState>()(
   devtools(
-    (set, get) => ({
+    (set) => ({
       // Initial state
       currentProject: null,
       projects: [],

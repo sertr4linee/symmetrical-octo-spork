@@ -11,7 +11,12 @@ export const useMenuActions = () => {
   } = useAppStore();
 
   useEffect(() => {
-    const cleanup = window.electronAPI.onMenuAction((event, action) => {
+    if (!window.electronAPI?.onMenuAction) {
+      console.warn('Electron API not available');
+      return;
+    }
+
+    const cleanup = window.electronAPI.onMenuAction((_event, action) => {
       console.log('Menu action:', action);
       
       switch (action) {

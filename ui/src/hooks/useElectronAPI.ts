@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useAppStore } from '@/store/app';
 
 export const useElectronAPI = () => {
@@ -6,6 +5,9 @@ export const useElectronAPI = () => {
 
   const apiCall = async (endpoint: string, method = 'GET', data?: any) => {
     try {
+      if (!window.electronAPI?.apiCall) {
+        throw new Error('Electron API not available');
+      }
       const result = await window.electronAPI.apiCall(endpoint, method, data);
       if (!result.success) {
         setError(result.error || 'API call failed');
@@ -19,6 +21,9 @@ export const useElectronAPI = () => {
 
   const readFile = async (filePath: string) => {
     try {
+      if (!window.electronAPI?.readFile) {
+        throw new Error('Electron API not available');
+      }
       return await window.electronAPI.readFile(filePath);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'File read failed');
@@ -28,6 +33,9 @@ export const useElectronAPI = () => {
 
   const writeFile = async (filePath: string, data: string) => {
     try {
+      if (!window.electronAPI?.writeFile) {
+        throw new Error('Electron API not available');
+      }
       return await window.electronAPI.writeFile(filePath, data);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'File write failed');
