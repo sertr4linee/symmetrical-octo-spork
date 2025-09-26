@@ -18,6 +18,7 @@ interface AppState {
   panels: PanelState;
   isLoading: boolean;
   error: string | null;
+  hasLoadedProjects: boolean;
   
   // History
   history: HistoryEntry[];
@@ -30,9 +31,11 @@ interface AppState {
   setZoom: (zoom: number) => void;
   setPan: (pan: { x: number; y: number }) => void;
   setCurrentTool: (tool: string) => void;
+  setBrushColor: (color: string) => void;
   togglePanel: (panel: keyof PanelState) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  setHasLoadedProjects: (loaded: boolean) => void;
   addHistoryEntry: (entry: Omit<HistoryEntry, 'id' | 'timestamp'>) => void;
   undo: () => void;
   redo: () => void;
@@ -62,6 +65,7 @@ export const useAppStore = create<AppState>()(
         tool: 'select',
         brushSize: 10,
         brushOpacity: 1,
+        brushColor: '#000000',
       },
       
       // Initialize with a background layer
@@ -85,6 +89,7 @@ export const useAppStore = create<AppState>()(
       
       isLoading: false,
       error: null,
+      hasLoadedProjects: false,
       
       history: [],
       historyIndex: -1,
@@ -114,6 +119,11 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           canvas: { ...state.canvas, tool },
         })),
+
+      setBrushColor: (color: string) =>
+        set((state) => ({
+          canvas: { ...state.canvas, brushColor: color },
+        })),
       
       togglePanel: (panel) =>
         set((state) => ({
@@ -123,6 +133,8 @@ export const useAppStore = create<AppState>()(
       setLoading: (loading) => set({ isLoading: loading }),
       
       setError: (error) => set({ error }),
+      
+      setHasLoadedProjects: (loaded) => set({ hasLoadedProjects: loaded }),
       
       addHistoryEntry: (entry) =>
         set((state) => {

@@ -6,7 +6,8 @@ const PropertiesPanel: React.FC = () => {
   const { 
     canvas, 
     updateCanvasState, 
-    setCurrentTool 
+    setCurrentTool,
+    setBrushColor
   } = useAppStore();
 
   const tools = [
@@ -25,6 +26,10 @@ const PropertiesPanel: React.FC = () => {
 
   const handleBrushOpacityChange = (opacity: number) => {
     updateCanvasState({ brushOpacity: opacity });
+  };
+
+  const handleBrushColorChange = (color: string) => {
+    setBrushColor(color);
   };
 
   return (
@@ -99,13 +104,15 @@ const PropertiesPanel: React.FC = () => {
               <div className="flex items-center gap-2">
                 <input
                   type="color"
-                  defaultValue="#000000"
+                  value={canvas.brushColor}
+                  onChange={(e) => handleBrushColorChange(e.target.value)}
                   className="w-8 h-8 border border-border rounded cursor-pointer"
                   title="Brush Color"
                 />
                 <input
                   type="text"
-                  defaultValue="#000000"
+                  value={canvas.brushColor}
+                  onChange={(e) => handleBrushColorChange(e.target.value)}
                   className="flex-1 px-2 py-1 text-xs border border-border rounded bg-background"
                   placeholder="#000000"
                 />
@@ -191,13 +198,12 @@ const PropertiesPanel: React.FC = () => {
           ].map((color, index) => (
             <button
               key={index}
-              className="w-6 h-6 rounded border border-border hover:scale-110 transition-transform"
+              className={`w-6 h-6 rounded border-2 hover:scale-110 transition-transform ${
+                canvas.brushColor === color ? 'border-primary' : 'border-border'
+              }`}
               style={{ backgroundColor: color }}
               title={color}
-              onClick={() => {
-                // TODO: Set brush color
-                console.log('Set color:', color);
-              }}
+              onClick={() => handleBrushColorChange(color)}
             />
           ))}
         </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAppStore } from '@/store/app';
 import { useElectronAPI } from '@/hooks/useElectronAPI';
 import { Project, ProjectCreate } from '@/types';
@@ -15,13 +15,15 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ className = '' }) => {
     setCurrentProject,
     isLoading,
     error,
+    hasLoadedProjects,
     setLoading, 
-    setError 
+    setError,
+    setHasLoadedProjects
   } = useAppStore();
   
   const electronAPI = useElectronAPI();
   const [isCreating, setIsCreating] = useState(false);
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const hasLoadedOnceRef = useRef(false);
   const [newProject, setNewProject] = useState<Partial<ProjectCreate>>({
     name: '',
     description: '',
@@ -31,18 +33,14 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ className = '' }) => {
     resolution: 300
   });
 
-  // Load projects on component mount
+  // Load projects on component mount - only once, use global flag
   useEffect(() => {
-    let mounted = true;
-    
-    if (electronAPI && mounted && !hasLoadedOnce) {
+    if (electronAPI && !hasLoadedProjects && !isLoading) {
+      console.log('FileExplorer: Loading projects for first time');
+      setHasLoadedProjects(true);
       loadProjects();
     }
-    
-    return () => {
-      mounted = false;
-    };
-  }, [electronAPI, hasLoadedOnce]);
+  }, [electronAPI, hasLoadedProjects, isLoading]);
 
   const loadProjects = async () => {
     if (!electronAPI) {
@@ -73,7 +71,6 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ className = '' }) => {
       console.error('Load projects error:', error);
     } finally {
       setLoading(false);
-      setHasLoadedOnce(true); // Mark that we've attempted to load at least once
     }
   };
 
@@ -302,6 +299,15 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ className = '' }) => {
             Loading projects...
           </div>
         )}
+        
+        {/* Debug Info - Remove in production */}
+        <div className="p-2 bg-gray-100 text-xs border-t">
+          <div>Projects count: {projects.length}</div>
+          <div>Loading: {isLoading ? 'true' : 'false'}</div>
+          <div>Error: {error || 'none'}</div>
+          <div>hasLoadedProjects (global): {hasLoadedProjects ? 'true' : 'false'}</div>
+          <div>hasLoadedOnceRef: {hasLoadedOnceRef.current ? 'true' : 'false'}</div>
+        </div>
         
         {/* Error State */}
         {error && (

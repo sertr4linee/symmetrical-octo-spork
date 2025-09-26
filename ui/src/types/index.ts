@@ -92,6 +92,7 @@ export interface CanvasState {
   tool: string;
   brushSize: number;
   brushOpacity: number;
+  brushColor: string;
 }
 
 // Filter types

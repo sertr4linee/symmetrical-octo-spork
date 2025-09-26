@@ -101,7 +101,7 @@ const Canvas: React.FC = () => {
       // Enable drawing mode for brush tool
       canvas.isDrawingMode = canvasState.tool === 'brush';
       canvas.freeDrawingBrush.width = canvasState.brushSize;
-      canvas.freeDrawingBrush.color = '#000000';
+      canvas.freeDrawingBrush.color = canvasState.brushColor;
 
       // Add event listeners
       canvas.on('mouse:wheel', handleWheel);
@@ -147,9 +147,10 @@ const Canvas: React.FC = () => {
       
       if (canvasState.tool === 'brush') {
         canvas.freeDrawingBrush.width = canvasState.brushSize;
+        canvas.freeDrawingBrush.color = canvasState.brushColor;
       }
     }
-  }, [canvasState.tool, canvasState.brushSize]);
+  }, [canvasState.tool, canvasState.brushSize, canvasState.brushColor]);
 
   // Update canvas zoom and pan
   useEffect(() => {
