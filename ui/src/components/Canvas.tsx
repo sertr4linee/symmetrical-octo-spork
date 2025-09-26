@@ -1,29 +1,15 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useAppStore } from '@/store/app';
+import { useCanvasObjects, type CanvasObject } from '@/store/canvas';
 import DropZone from './DropZone';
-
-interface CanvasObject {
-  id: string;
-  type: 'rectangle' | 'circle' | 'brush' | 'triangle' | 'diamond' | 'star' | 'polygon';
-  x: number;
-  y: number;
-  width?: number;
-  height?: number;
-  radius?: number;
-  color: string;
-  strokeColor?: string;
-  strokeWidth?: number;
-  points?: { x: number; y: number }[];
-  sides?: number; // For polygon
-}
 
 const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [objects, setObjects] = useState<CanvasObject[]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [selectedObject, setSelectedObject] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  
+  const { objects, selectedObjectId, addObject, updateObject, setSelectedObject, clearObjects } = useCanvasObjects();
   
   const { 
     canvas: canvasState, 
@@ -622,28 +608,6 @@ const Canvas: React.FC = () => {
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
           />
-          
-          {/* Canvas overlay info */}
-          <div className="absolute top-4 left-4 bg-background/90 text-foreground px-3 py-2 rounded border border-border backdrop-blur-sm text-xs">
-            {currentProject ? (
-              <span>
-                {currentProject.name} - {currentProject.width}x{currentProject.height}
-              </span>
-            ) : (
-              <span>No project loaded - Open a project to enable canvas</span>
-            )}
-          </div>
-          
-          {/* Tool info - simplified */}
-          <div className="absolute top-4 right-4 bg-background/90 text-foreground px-3 py-2 rounded border border-border backdrop-blur-sm text-xs">
-            <div className="flex items-center gap-3">
-              <span className="text-muted-foreground">Tool:</span>
-              <span className="font-medium capitalize">{canvasState.tool}</span>
-              <span className="text-muted-foreground">•</span>
-              <span className="text-muted-foreground">Objects:</span>
-              <span className="font-medium">{objects.length}</span>
-            </div>
-          </div>
           
           {/* No project overlay */}
           {!currentProject && (

@@ -4,6 +4,7 @@ import { useAppStore } from '@/store/app';
 import Canvas from '@/components/Canvas';
 import Sidebar from '@/components/Sidebar';
 import ToolsSidebar from '@/components/ToolsSidebar';
+import CanvasToolbar from '@/components/CanvasToolbar';
 import StatusBar from '@/components/StatusBar';
 import LoadingScreen from '@/components/LoadingScreen';
 import ErrorMessage from '@/components/ErrorMessage';
@@ -56,6 +57,7 @@ const AppContent: React.FC = () => {
         
         {/* Main Canvas Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
+          <CanvasToolbar />
           <Canvas />
         </div>
         
