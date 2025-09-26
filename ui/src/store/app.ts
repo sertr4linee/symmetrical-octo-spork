@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { Project, CanvasState, PanelState, HistoryEntry } from '@/types';
+import { Project, CanvasState, PanelState, HistoryEntry, Layer } from '@/types';
 
 interface AppState {
   // Current project
@@ -9,6 +9,10 @@ interface AppState {
   
   // Canvas state
   canvas: CanvasState;
+  
+  // Layers state
+  layers: Layer[];
+  activeLayerId: string | null;
   
   // UI state
   panels: PanelState;
@@ -33,6 +37,15 @@ interface AppState {
   undo: () => void;
   redo: () => void;
   resetHistory: () => void;
+  
+  // Layer actions
+  addLayer: (layer: Layer) => void;
+  removeLayer: (layerId: string) => void;
+  toggleLayerVisibility: (layerId: string) => void;
+  setActiveLayer: (layerId: string) => void;
+  moveLayer: (layerId: string, newIndex: number) => void;
+  updateLayerOpacity: (layerId: string, opacity: number) => void;
+  updateLayer: (layerId: string, updates: Partial<Layer>) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -50,6 +63,18 @@ export const useAppStore = create<AppState>()(
         brushSize: 10,
         brushOpacity: 1,
       },
+      
+      // Initialize with a background layer
+      layers: [
+        {
+          id: 'background',
+          name: 'Background',
+          visible: true,
+          opacity: 100,
+          type: 'background',
+        }
+      ],
+      activeLayerId: 'background',
       
       panels: {
         tools: true,
@@ -140,6 +165,70 @@ export const useAppStore = create<AppState>()(
         }),
       
       resetHistory: () => set({ history: [], historyIndex: -1 }),
+      
+      // Layer actions
+      addLayer: (layer) =>
+        set((state) => ({
+          layers: [...state.layers, layer],
+          activeLayerId: layer.id,
+        })),
+      
+      removeLayer: (layerId) =>
+        set((state) => {
+          const newLayers = state.layers.filter(layer => layer.id !== layerId);
+          const newActiveLayerId = state.activeLayerId === layerId
+            ? (newLayers.length > 0 ? newLayers[newLayers.length - 1].id : null)
+            : state.activeLayerId;
+          
+          return {
+            layers: newLayers,
+            activeLayerId: newActiveLayerId,
+          };
+        }),
+      
+      toggleLayerVisibility: (layerId) =>
+        set((state) => ({
+          layers: state.layers.map(layer =>
+            layer.id === layerId
+              ? { ...layer, visible: !layer.visible }
+              : layer
+          ),
+        })),
+      
+      setActiveLayer: (layerId) => set({ activeLayerId: layerId }),
+      
+      moveLayer: (layerId, newIndex) =>
+        set((state) => {
+          const layers = [...state.layers];
+          const currentIndex = layers.findIndex(layer => layer.id === layerId);
+          
+          if (currentIndex === -1 || newIndex < 0 || newIndex >= layers.length) {
+            return state;
+          }
+          
+          const [movedLayer] = layers.splice(currentIndex, 1);
+          layers.splice(newIndex, 0, movedLayer);
+          
+          return { layers };
+        }),
+      
+      updateLayerOpacity: (layerId, opacity) =>
+        set((state) => ({
+          layers: state.layers.map(layer =>
+            layer.id === layerId
+              ? { ...layer, opacity }
+              : layer
+          ),
+        })),
+      
+      updateLayer: (layerId, updates) =>
+        set((state) => ({
+          layers: state.layers.map(layer =>
+            layer.id === layerId
+              ? { ...layer, ...updates }
+              : layer
+          ),
+        })),
     }),
     {
       name: 'bettergimp-store',

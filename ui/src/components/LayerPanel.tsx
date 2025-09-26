@@ -1,15 +1,7 @@
 import React from 'react';
 import { useAppStore } from '@/store/app';
+import { Layer } from '@/types';
 import { Eye, EyeOff, Trash2, Plus, ChevronUp, ChevronDown } from 'lucide-react';
-
-interface Layer {
-  id: string;
-  name: string;
-  visible: boolean;
-  opacity: number;
-  type: 'image' | 'text' | 'shape' | 'background';
-  fabricObjectId?: string;
-}
 
 const LayerPanel: React.FC = () => {
   const { 
