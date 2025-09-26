@@ -1,0 +1,173 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Déclenche sur les tags qui commencent par 'v' (ex: v1.0.0)
+
+permissions:
+  contents: write
+
+jobs:
+  build-core:
+    name: Build C++ Core
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake g++ libopencv-dev libgtest-dev pybind11-dev pkg-config
+
+    - name: Build Core
+      run: |
+        cd core
+        mkdir -p build
+        cd build
+        cmake ..
+        make -j$(nproc)
+
+    - name: Run Tests
+      run: |
+        cd core/build
+        ./bettergimp_tests
+
+    - name: Package Core
+      run: |
+        cd core
+        tar -czf ../betterps-core-linux-x64.tar.gz build/libbettergimp_core.a include/
+
+    - name: Upload Core Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: betterps-core-linux-x64
+        path: betterps-core-linux-x64.tar.gz
+
+  build-ui:
+    name: Build UI
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+
+    - name: Install dependencies
+      run: |
+        cd ui
+        bun install
+
+    - name: Build UI
+      run: |
+        cd ui
+        bun run build
+
+    - name: Package UI
+      run: |
+        cd ui
+        tar -czf ../betterps-ui-build.tar.gz dist/
+
+    - name: Upload UI Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: betterps-ui-build
+        path: betterps-ui-build.tar.gz
+
+  build-electron:
+    name: Build Electron App
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+
+    - name: Install dependencies
+      run: |
+        cd ui
+        bun install
+
+    - name: Build Electron App (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        cd ui
+        bun run build:electron:linux
+
+    - name: Build Electron App (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd ui
+        bun run build:electron:win
+
+    - name: Build Electron App (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd ui
+        bun run build:electron:mac
+
+    - name: Upload Electron Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: betterps-electron-${{ matrix.os }}
+        path: ui/dist-electron/
+
+  create-release:
+    name: Create Release
+    needs: [build-core, build-ui, build-electron]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+
+    - name: Get version from tag
+      id: version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        if [ -f CHANGELOG.md ]; then
+          # Extract version changelog if exists
+          sed -n "/^## \[${{ steps.version.outputs.VERSION }}\]/,/^## \[/p" CHANGELOG.md | head -n -1 > release_notes.txt
+        else
+          echo "Release ${{ steps.version.outputs.VERSION }}" > release_notes.txt
+          echo "" >> release_notes.txt
+          echo "### Changes" >> release_notes.txt
+          echo "- Build artifacts for this version" >> release_notes.txt
+        fi
+
+    - name: Create Release
+      uses: ncipollo/create-release@v1
+      with:
+        tag: ${{ steps.version.outputs.VERSION }}
+        name: BetterPS ${{ steps.version.outputs.VERSION }}
+        bodyFile: release_notes.txt
+        draft: false
+        prerelease: ${{ contains(steps.version.outputs.VERSION, 'alpha') || contains(steps.version.outputs.VERSION, 'beta') || contains(steps.version.outputs.VERSION, 'rc') }}
+        artifacts: |
+          betterps-core-linux-x64/betterps-core-linux-x64.tar.gz
+          betterps-ui-build/betterps-ui-build.tar.gz
+          betterps-electron-ubuntu-latest/**/*
+          betterps-electron-windows-latest/**/*
+          betterps-electron-macos-latest/**/*
