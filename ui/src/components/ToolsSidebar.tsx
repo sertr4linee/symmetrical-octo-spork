@@ -19,8 +19,7 @@ import {
   ZoomOut,
   RotateCcw,
   Plus,
-  ChevronDown,
-  Palette
+  ChevronDown
 } from 'lucide-react';
 
 interface ToolsSidebarProps {

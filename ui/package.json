@@ -1,6 +1,6 @@
 {
   "name": "bettergimp-ui",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Better GIMP - Modern image editing application built with Electron and React",
   "main": "main.js",
   "homepage": "./",
