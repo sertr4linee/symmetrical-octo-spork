@@ -1,5 +1,4 @@
 import { useAppStore } from '@/store/app';
-import { isElectron } from '@/utils';
 
 export const useElectronAPI = () => {
   const setError = useAppStore((state) => state.setError);
