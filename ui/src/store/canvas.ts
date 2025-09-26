@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 export interface CanvasObject {
   id: string;
-  type: 'rectangle' | 'circle' | 'triangle' | 'diamond' | 'star' | 'polygon' | 'brush';
+  type: 'rectangle' | 'circle' | 'triangle' | 'diamond' | 'star' | 'polygon' | 'brush' | 'pencil' | 'eraser';
   x: number;
   y: number;
   width?: number;

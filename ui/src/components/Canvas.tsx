@@ -116,18 +116,28 @@ const Canvas: React.FC = () => {
           break;
         
         case 'brush':
-          if (obj.points && obj.points.length > 1) {
-            ctx.beginPath();
-            ctx.lineWidth = canvasState.brushSize;
+        case 'pencil':
+        case 'eraser':
+          const points = obj.points || [];
+          if (points.length > 0) {
+            if (obj.type === 'eraser') {
+              ctx.globalCompositeOperation = 'destination-out';
+              ctx.strokeStyle = 'rgba(0,0,0,1)';
+            } else {
+              ctx.strokeStyle = obj.color;
+              ctx.globalAlpha = canvasState.brushOpacity;
+            }
+            ctx.lineWidth = obj.type === 'pencil' ? Math.max(1, canvasState.brushSize / 3) : canvasState.brushSize;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
-            ctx.strokeStyle = obj.color;
-            
-            ctx.moveTo(obj.points[0].x, obj.points[0].y);
-            for (let i = 1; i < obj.points.length; i++) {
-              ctx.lineTo(obj.points[i].x, obj.points[i].y);
-            }
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            points.forEach(point => {
+              ctx.lineTo(point.x, point.y);
+            });
             ctx.stroke();
+            ctx.globalAlpha = 1;
+            ctx.globalCompositeOperation = 'source-over';
           }
           break;
       }
@@ -225,7 +235,9 @@ const Canvas: React.FC = () => {
           break;
           
         case 'brush':
-          // Check if click is near any point in the brush stroke
+        case 'pencil':
+        case 'eraser':
+          // Check if click is near any point in the stroke
           if (obj.points && obj.points.length > 0) {
             const tolerance = (canvasState.brushSize || 10) / 2;
             for (const point of obj.points) {
@@ -269,24 +281,25 @@ const Canvas: React.FC = () => {
         setSelectedObject(null);
         setIsDragging(false);
       }
-    } else if (canvasState.tool === 'brush') {
+    } else if (canvasState.tool === 'brush' || canvasState.tool === 'pencil' || canvasState.tool === 'eraser') {
       setIsDrawing(true);
       const adjustedX = (x / canvasState.zoom) - canvasState.pan.x;
       const adjustedY = (y / canvasState.zoom) - canvasState.pan.y;
       
-      const newBrushObject: CanvasObject = {
-        id: `brush_${Date.now()}`,
-        type: 'brush',
+      const toolName = canvasState.tool.charAt(0).toUpperCase() + canvasState.tool.slice(1);
+      const newStrokeObject: CanvasObject = {
+        id: `${canvasState.tool}_${Date.now()}`,
+        type: canvasState.tool as 'brush' | 'pencil' | 'eraser',
         x: adjustedX,
         y: adjustedY,
-        color: canvasState.brushColor,
+        color: canvasState.tool === 'eraser' ? '#000000' : canvasState.brushColor,
         points: [{ x: adjustedX, y: adjustedY }]
       };
 
-      addObject(newBrushObject);
+      addObject(newStrokeObject);
       addLayer({
-        id: newBrushObject.id,
-        name: `Brush Stroke ${objects.length + 1}`,
+        id: newStrokeObject.id,
+        name: `${toolName} Stroke ${objects.length + 1}`,
         visible: true,
         opacity: 100,
         type: 'shape'
@@ -312,16 +325,20 @@ const Canvas: React.FC = () => {
       } else {
         setCursor('default');
       }
-    } else if (canvasState.tool === 'brush') {
+    } else if (canvasState.tool === 'brush' || canvasState.tool === 'pencil') {
       setCursor('crosshair');
+    } else if (canvasState.tool === 'eraser') {
+      setCursor('alias');
     }
 
-    if (canvasState.tool === 'brush' && isDrawing) {
+    if ((canvasState.tool === 'brush' || canvasState.tool === 'pencil' || canvasState.tool === 'eraser') && isDrawing) {
       const adjustedX = (x / canvasState.zoom) - canvasState.pan.x;
       const adjustedY = (y / canvasState.zoom) - canvasState.pan.y;
       
       const currentObject = objects[objects.length - 1];
-      if (currentObject && currentObject.type === 'brush' && currentObject.points) {
+      if (currentObject && 
+          (currentObject.type === 'brush' || currentObject.type === 'pencil' || currentObject.type === 'eraser') && 
+          currentObject.points) {
         updateObject(currentObject.id, {
           points: [...currentObject.points, { x: adjustedX, y: adjustedY }]
         });

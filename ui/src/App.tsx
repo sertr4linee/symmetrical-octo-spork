@@ -52,7 +52,7 @@ const AppContent: React.FC = () => {
             <ToolsSidebar 
               onAddShape={createShape}
               onClearCanvas={clearCanvas}
-              onOpenProjectManager={() => setIsProjectManagerOpen(true)}
+              onNewProject={() => setIsProjectManagerOpen(true)}
             />
           </div>
         )}
