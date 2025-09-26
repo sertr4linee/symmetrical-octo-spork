@@ -41,8 +41,8 @@ function createWindow() {
     mainWindow = null;
   });
 
-  // Set up the menu
-  createMenu();
+  // Disable the menu bar
+  mainWindow.setMenuBarVisibility(false);
 }
 
 function createMenu() {

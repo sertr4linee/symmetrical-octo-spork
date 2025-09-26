@@ -27,6 +27,8 @@ interface AppState {
   // Actions
   setCurrentProject: (project: Project | null) => void;
   setProjects: (projects: Project[]) => void;
+  addProject: (project: Project) => void;
+  removeProject: (projectId: string) => void;
   updateCanvasState: (updates: Partial<CanvasState>) => void;
   setZoom: (zoom: number) => void;
   setPan: (pan: { x: number; y: number }) => void;
@@ -72,7 +74,34 @@ export const useAppStore = create<AppState>()(
         image_count: 0,
         file_size: 0
       },
-      projects: [],
+      projects: [
+        {
+          id: 'default',
+          name: 'Untitled Project',
+          description: 'A new project',
+          width: 800,
+          height: 600,
+          color_mode: 'RGB' as const,
+          resolution: 72,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          image_count: 0,
+          file_size: 0
+        },
+        {
+          id: 'sample1',
+          name: 'Logo Design',
+          description: 'Company logo redesign project',
+          width: 1200,
+          height: 800,
+          color_mode: 'RGB' as const,
+          resolution: 300,
+          created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+          updated_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+          image_count: 3,
+          file_size: 2450000
+        }
+      ],
       
       canvas: {
         zoom: 1,
@@ -114,6 +143,17 @@ export const useAppStore = create<AppState>()(
       setCurrentProject: (project) => set({ currentProject: project }),
       
       setProjects: (projects) => set({ projects }),
+      
+      addProject: (project) =>
+        set((state) => ({
+          projects: [...state.projects, project]
+        })),
+      
+      removeProject: (projectId) =>
+        set((state) => ({
+          projects: state.projects.filter(p => p.id !== projectId),
+          currentProject: state.currentProject?.id === projectId ? null : state.currentProject
+        })),
       
       updateCanvasState: (updates) =>
         set((state) => ({
