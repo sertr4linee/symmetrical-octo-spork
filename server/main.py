@@ -8,10 +8,12 @@ import os
 import sys
 from pathlib import Path
 
+# Add src to path for relative imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
+# Import components
 from api.router import api_router
-from models.database import init_db
+from models.database import engine, Base
 
 
 @asynccontextmanager
@@ -22,9 +24,8 @@ async def lifespan(app: FastAPI):
     
     # Initialisation de la base de données
     try:
-        async with engine.begin() as conn:
-            # Créer les tables si elles n'existent pas
-            await conn.run_sync(Base.metadata.create_all)
+        # Utiliser l'approche synchrone pour SQLAlchemy
+        Base.metadata.create_all(bind=engine)
         print("✅ Base de données initialisée")
     except Exception as e:
         print(f"❌ Erreur lors de l'initialisation de la DB: {e}")

@@ -32,8 +32,16 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ className = '' }) => {
 
   // Load projects on component mount
   useEffect(() => {
-    loadProjects();
-  }, []);
+    let mounted = true;
+    
+    if (electronAPI && mounted && projects.length === 0) {
+      loadProjects();
+    }
+    
+    return () => {
+      mounted = false;
+    };
+  }, [electronAPI, projects.length]);
 
   const loadProjects = async () => {
     if (!electronAPI) {
@@ -111,17 +119,30 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ className = '' }) => {
     
     try {
       setLoading(true);
+      setError(null);
+      
+      console.log('Opening project:', project.name);
+      
+      // Set the project as current project
+      setCurrentProject(project);
+      
+      // Optional: fetch full project details from API
       const response = await electronAPI.apiCall(`/api/projects/${project.id}`);
       
       if (response.success && response.data) {
         setCurrentProject(response.data);
-        setError(null);
+        console.log('Project opened successfully:', response.data.name);
+        
+        // Here you could add navigation to canvas or other UI updates
+        // For now, the project will show as "Current Project" in the UI
       } else {
-        setError(response.error || 'Failed to open project');
+        console.warn('Failed to fetch full project details, using cached data');
+        // Keep the project set even if API call fails
       }
     } catch (error) {
-      setError('Failed to open project');
       console.error('Open project error:', error);
+      // Still set the project even if there's an error
+      setCurrentProject(project);
     } finally {
       setLoading(false);
     }
