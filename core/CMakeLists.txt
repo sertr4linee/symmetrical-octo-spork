@@ -61,7 +61,7 @@ endif()
 find_package(TBB REQUIRED)
 
 # Eigen3
-find_package(Eigen3 3.4 REQUIRED NO_MODULE)
+find_package(Eigen3 REQUIRED NO_MODULE)
 
 # pybind11 for Python bindings
 if(BUILD_PYTHON_BINDINGS)
@@ -83,36 +83,19 @@ endif()
 # SOURCE FILES
 # ====================================
 set(CORE_SOURCES
+    src/core.cpp
     src/image/image.cpp
-    src/image/image_loader.cpp
     src/image/image_processor.cpp
-    src/filters/basic_filters.cpp
-    src/filters/gaussian_blur.cpp
-    src/filters/unsharp_mask.cpp
-    src/transforms/resize.cpp
-    src/transforms/rotate.cpp
-    src/adjustments/brightness_contrast.cpp
-    src/adjustments/curves.cpp
-    src/adjustments/levels.cpp
-    src/utils/simd_utils.cpp
-    src/utils/memory_pool.cpp
+    src/image/image_exporter.cpp
+    src/image/image_importer.cpp
 )
 
 set(CORE_HEADERS
-    include/bettergimp/image/image.hpp
-    include/bettergimp/image/image_loader.hpp
-    include/bettergimp/image/image_processor.hpp
-    include/bettergimp/filters/basic_filters.hpp
-    include/bettergimp/filters/gaussian_blur.hpp
-    include/bettergimp/filters/unsharp_mask.hpp
-    include/bettergimp/transforms/resize.hpp
-    include/bettergimp/transforms/rotate.hpp
-    include/bettergimp/adjustments/brightness_contrast.hpp
-    include/bettergimp/adjustments/curves.hpp
-    include/bettergimp/adjustments/levels.hpp
-    include/bettergimp/utils/simd_utils.hpp
-    include/bettergimp/utils/memory_pool.hpp
     include/bettergimp/core.hpp
+    include/bettergimp/image/image.hpp
+    include/bettergimp/image/image_processor.hpp
+    include/bettergimp/image/image_exporter.hpp
+    include/bettergimp/image/image_importer.hpp
 )
 
 # ====================================
@@ -144,20 +127,20 @@ endif()
 # PYTHON BINDINGS
 # ====================================
 if(BUILD_PYTHON_BINDINGS)
-    pybind11_add_module(bettergimp_py
-        src/python/bindings.cpp
-        src/python/image_bindings.cpp
-        src/python/filter_bindings.cpp
-        src/python/transform_bindings.cpp
-    )
+    # TODO: Create Python binding files
+    # pybind11_add_module(bettergimp_py
+    #     src/python_bindings/bindings.cpp
+    # )
+    # 
+    # target_link_libraries(bettergimp_py PRIVATE bettergimp_core)
+    # 
+    # # Set properties for Python module
+    # set_target_properties(bettergimp_py PROPERTIES
+    #     CXX_VISIBILITY_PRESET "hidden"
+    #     INTERPROCEDURAL_OPTIMIZATION TRUE
+    # )
     
-    target_link_libraries(bettergimp_py PRIVATE bettergimp_core)
-    
-    # Set properties for Python module
-    set_target_properties(bettergimp_py PROPERTIES
-        CXX_VISIBILITY_PRESET "hidden"
-        INTERPROCEDURAL_OPTIMIZATION TRUE
-    )
+    message(STATUS "Python bindings will be implemented in next phase")
 endif()
 
 # ====================================
@@ -166,19 +149,8 @@ endif()
 if(BUILD_TESTING)
     # Test configuration
     set(TEST_SOURCES
-        tests/test_main.cpp
-        tests/image/test_image.cpp
-        tests/image/test_image_loader.cpp
-        tests/image/test_image_processor.cpp
-        tests/filters/test_gaussian_blur.cpp
-        tests/filters/test_unsharp_mask.cpp
-        tests/transforms/test_resize.cpp
-        tests/transforms/test_rotate.cpp
-        tests/adjustments/test_brightness_contrast.cpp
-        tests/adjustments/test_curves.cpp
-        tests/adjustments/test_levels.cpp
-        tests/utils/test_simd_utils.cpp
-        tests/performance/test_performance.cpp
+        tests/test_core.cpp
+        tests/test_image_advanced.cpp
     )
     
     add_executable(bettergimp_tests ${TEST_SOURCES})
@@ -240,6 +212,25 @@ if(BUILD_BENCHMARKS)
 endif()
 
 # ====================================
+# DEMO APPLICATION
+# ====================================
+option(BUILD_DEMO "Build demo application" OFF)
+
+if(BUILD_DEMO)
+    add_executable(image_processing_demo demo/image_processing_demo.cpp)
+    
+    target_link_libraries(image_processing_demo
+        PRIVATE
+            bettergimp_core
+    )
+    
+    target_include_directories(image_processing_demo
+        PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/demo
+    )
+endif()
+
+# ====================================
 # INSTALLATION
 # ====================================
 include(GNUInstallDirs)
@@ -256,11 +247,12 @@ install(DIRECTORY include/
 )
 
 # Install Python module
-if(BUILD_PYTHON_BINDINGS)
-    install(TARGETS bettergimp_py
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/python
-    )
-endif()
+# TODO: Uncomment when bettergimp_py target is created
+# if(BUILD_PYTHON_BINDINGS)
+#     install(TARGETS bettergimp_py
+#         DESTINATION ${CMAKE_INSTALL_PREFIX}/python
+#     )
+# endif()
 
 # Export targets
 install(EXPORT bettergimp-targets

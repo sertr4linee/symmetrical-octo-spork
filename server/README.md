@@ -2,6 +2,8 @@
 
 Ce dossier contient l'API backend de Better GIMP, développée avec FastAPI.
 
+source venv/bin/activate
+
 ## Structure
 
 ```
