@@ -5,11 +5,14 @@
   "main": "main.js",
   "homepage": "./",
   "scripts": {
-    "dev": "concurrently \"npm run dev:vite\" \"wait-on http://localhost:5173 && npm run dev:electron\"",
+    "dev": "concurrently \"bun run dev:vite\" \"wait-on http://localhost:5173 && bun run dev:electron\"",
     "dev:vite": "vite",
     "dev:electron": "NODE_ENV=development electron .",
     "build": "tsc && vite build",
-    "build:electron": "npm run build && electron-builder",
+    "build:electron": "bun run build && electron-builder",
+    "build:electron:linux": "bun run build && electron-builder --linux",
+    "build:electron:win": "bun run build && electron-builder --win",
+    "build:electron:mac": "bun run build && electron-builder --mac",
     "preview": "vite preview",
     "test": "echo \"Error: no test specified\" && exit 1",
     "electron": "electron ."
@@ -55,5 +58,55 @@
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "zustand": "^4.5.7"
+  },
+  "build": {
+    "appId": "com.betterps.app",
+    "productName": "BetterPS",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "main.js",
+      "preload.js"
+    ],
+    "linux": {
+      "category": "Graphics",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "mac": {
+      "category": "public.app-category.graphics-design",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
