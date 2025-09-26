@@ -1,65 +1,187 @@
-import React, { useState } from 'react';
-import { useAppStore } from '@/store/app';
-import FileExplorer from './FileExplorer';
-import LayerPanel from './LayerPanel';
-import PropertiesPanel from './PropertiesPanel';
+import React, { useState } from 'react';import React, { useState } from 'react';import React, { useState } from 'react';
 
-interface SidebarProps {
+import { useAppStore } from '@/store/app';
+
+import FileExplorer from './FileExplorer';import { useAppStore } from '@/store/app';import { useAppStore } from '@/store/app';
+
+import LayerPanel from './LayerPanel';
+
+import PropertiesPanel from './PropertiesPanel';import FileExplorer from './FileExplorer';import FileExplorer from './FileExplorer';
+
+
+
+interface SidebarProps {import LayerPanel from './LayerPanel';import LayerPanel from './LayerPanel';
+
   side: 'left' | 'right';
-}
+
+}import PropertiesPanel from './PropertiesPanel';import PropertiesPanel from './PropertiesPanel';
+
+
 
 const Sidebar: React.FC<SidebarProps> = ({ side }) => {
-  const { 
-    panels, 
-    togglePanel, 
-    canvas, 
-    updateCanvasState 
-  } = useAppStore();
-  
-  const [leftTab, setLeftTab] = useState<'tools' | 'files'>('tools');
 
-  if (side === 'left') {
+  const { panels } = useAppStore();
+
+  const [leftTab, setLeftTab] = useState<'tools' | 'files'>('tools');interface SidebarProps {interface SidebarProps {
+
+
+
+  if (side === 'left') {  side: 'left' | 'right';  side: 'left' | 'right';
+
     return (
-      <div className="w-full h-full flex flex-col">
+
+      <div className="w-full h-full flex flex-col">}}
+
         {/* Tab Headers */}
+
         <div className="flex border-b border-border">
+
           <button
-            onClick={() => setLeftTab('tools')}
+
+            onClick={() => setLeftTab('tools')}const Sidebar: React.FC<SidebarProps> = ({ side }) => {const Sidebar: React.FC<SidebarProps> = ({ side }) => {
+
             className={`flex-1 px-4 py-2 text-sm font-medium ${
-              leftTab === 'tools' 
+
+              leftTab === 'tools'   const { panels } = useAppStore();  const { 
+
                 ? 'text-foreground border-b-2 border-primary' 
-                : 'text-muted-foreground hover:text-foreground'
+
+                : 'text-muted-foreground hover:text-foreground'  const [leftTab, setLeftTab] = useState<'tools' | 'files'>('tools');    panels, 
+
             }`}
-          >
+
+          >    togglePanel, 
+
             Tools
-          </button>
+
+          </button>  if (side === 'left') {    canvas, 
+
           <button
-            onClick={() => setLeftTab('files')}
+
+            onClick={() => setLeftTab('files')}    return (    updateCanvasState 
+
             className={`flex-1 px-4 py-2 text-sm font-medium ${
-              leftTab === 'files' 
+
+              leftTab === 'files'       <div className="w-full h-full flex flex-col">  } = useAppStore();
+
                 ? 'text-foreground border-b-2 border-primary' 
-                : 'text-muted-foreground hover:text-foreground'
+
+                : 'text-muted-foreground hover:text-foreground'        {/* Tab Headers */}  
+
             }`}
-          >
+
+          >        <div className="flex border-b border-border">  const [leftTab, setLeftTab] = useState<'tools' | 'files'>('tools');
+
             Files
-          </button>
+
+          </button>          <button
+
         </div>
 
+            onClick={() => setLeftTab('tools')}  if (side === 'left') {
+
         {/* Tab Content */}
-        <div className="flex-1 overflow-hidden">
+
+        <div className="flex-1 overflow-hidden">            className={`flex-1 px-4 py-2 text-sm font-medium ${    return (
+
           {leftTab === 'tools' ? (
-            <PropertiesPanel />
+
+            <PropertiesPanel />              leftTab === 'tools'       <div className="w-full h-full flex flex-col">
+
           ) : (
+
+            <FileExplorer className="flex-1" />                ? 'text-foreground border-b-2 border-primary'         {/* Tab Headers */}
+
+          )}
+
+        </div>                : 'text-muted-foreground hover:text-foreground'        <div className="flex border-b border-border">
+
+      </div>
+
+    );            }`}          <button
+
+  }
+
+          >            onClick={() => setLeftTab('tools')}
+
+  // Right side - Layers Panel
+
+  return (            Tools            className={`flex-1 px-4 py-2 text-sm font-medium ${
+
+    <div className="w-full h-full">
+
+      {panels.layers && <LayerPanel />}          </button>              leftTab === 'tools' 
+
+    </div>
+
+  );          <button                ? 'text-foreground border-b-2 border-primary' 
+
+};
+
+            onClick={() => setLeftTab('files')}                : 'text-muted-foreground hover:text-foreground'
+
+export default Sidebar;
+            className={`flex-1 px-4 py-2 text-sm font-medium ${            }`}
+
+              leftTab === 'files'           >
+
+                ? 'text-foreground border-b-2 border-primary'             Tools
+
+                : 'text-muted-foreground hover:text-foreground'          </button>
+
+            }`}          <button
+
+          >            onClick={() => setLeftTab('files')}
+
+            Files            className={`flex-1 px-4 py-2 text-sm font-medium ${
+
+          </button>              leftTab === 'files' 
+
+        </div>                ? 'text-foreground border-b-2 border-primary' 
+
+                : 'text-muted-foreground hover:text-foreground'
+
+        {/* Tab Content */}            }`}
+
+        <div className="flex-1 overflow-hidden">          >
+
+          {leftTab === 'tools' ? (            Files
+
+            <PropertiesPanel />          </button>
+
+          ) : (        </div>
+
+            <FileExplorer className="flex-1" />
+
+          )}        {/* Tab Content */}
+
+        </div>        <div className="flex-1 overflow-hidden">
+
+      </div>          {leftTab === 'tools' ? (
+
+    );            <PropertiesPanel />
+
+  }          ) : (
+
             <div className="p-4">
-              <h3 className="text-sm font-medium text-muted-foreground mb-3">Tools</h3>
-            
-              <div className="grid grid-cols-2 gap-2">
-                {['select', 'brush', 'eraser', 'text', 'rectangle', 'circle', 'line', 'eyedropper'].map((tool) => (
-                  <button
-                    key={tool}
-                    onClick={() => updateCanvasState({ tool })}
+
+  // Right side - Layers Panel              <h3 className="text-sm font-medium text-muted-foreground mb-3">Tools</h3>
+
+  return (            
+
+    <div className="w-full h-full">              <div className="grid grid-cols-2 gap-2">
+
+      {panels.layers && <LayerPanel />}                {['select', 'brush', 'eraser', 'text', 'rectangle', 'circle', 'line', 'eyedropper'].map((tool) => (
+
+    </div>                  <button
+
+  );                    key={tool}
+
+};                    onClick={() => updateCanvasState({ tool })}
+
                     className={`p-3 rounded border border-border hover:bg-accent hover:text-accent-foreground text-sm transition-colors capitalize ${
-                      canvas.tool === tool ? 'bg-primary text-primary-foreground' : ''
+
+export default Sidebar;                      canvas.tool === tool ? 'bg-primary text-primary-foreground' : ''
                     }`}
                   >
                     {tool}
@@ -107,84 +229,13 @@ const Sidebar: React.FC<SidebarProps> = ({ side }) => {
 
   return (
     <div className="w-full h-full">
-      <div className="flex flex-col h-full">
-        {/* Layers Panel */}
-        {panels.layers && (
-          <div className="border-b border-border p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium">Layers</h3>
-              <button
-                onClick={() => togglePanel('layers')}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="space-y-2">
-              <div className="p-2 bg-accent rounded border">
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                  <span className="text-sm">Background</span>
-                </div>
-              </div>
-              <div className="p-2 border border-border rounded">
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-red-500 rounded"></div>
-                  <span className="text-sm">Layer 1</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+      {/* Layers Panel */}
+      {panels.layers && (
+        <LayerPanel />
+      )}
         
-        {/* Properties Panel */}
-        {panels.properties && (
-          <div className="border-b border-border p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium">Properties</h3>
-              <button
-                onClick={() => togglePanel('properties')}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs text-muted-foreground block mb-1">Brightness</label>
-                <input
-                  type="range"
-                  min="-100"
-                  max="100"
-                  defaultValue="0"
-                  className="w-full"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground block mb-1">Contrast</label>
-                <input
-                  type="range"
-                  min="-100"
-                  max="100"
-                  defaultValue="0"
-                  className="w-full"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground block mb-1">Saturation</label>
-                <input
-                  type="range"
-                  min="-100"
-                  max="100"
-                  defaultValue="0"
-                  className="w-full"
-                />
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
+  );
         
         {/* History Panel */}
         {panels.history && (
