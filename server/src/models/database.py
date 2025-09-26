@@ -30,7 +30,6 @@ class ProjectDB(Base):
     height = Column(Integer, nullable=False)
     color_mode = Column(String(50), default="RGB")
     resolution = Column(Integer, default=300)
-    canvas_data = Column(Text, nullable=True)  # JSON du canvas Fabric.js
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     image_count = Column(Integer, default=0)

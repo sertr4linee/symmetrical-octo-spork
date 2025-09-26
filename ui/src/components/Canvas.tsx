@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 import { fabric } from 'fabric';
 import { useAppStore } from '@/store/app';
-import { useElectronAPI } from '@/hooks/useElectronAPI';
 import DropZone from './DropZone';
 
 // Extend fabric.Canvas with custom properties
@@ -19,11 +18,8 @@ const Canvas: React.FC = () => {
     canvas: canvasState, 
     currentProject,
     setZoom,
-    setPan,
-    setError 
+    setPan
   } = useAppStore();
-  
-  const electronAPI = useElectronAPI();
 
   // Handle wheel zoom
   const handleWheel = useCallback((opt: fabric.IEvent | any) => {
@@ -169,6 +165,8 @@ const Canvas: React.FC = () => {
       }
     }
   }, [canvasState.zoom, canvasState.pan]);
+
+
 
   // Handle dropped images on canvas
   const handleFilesDropped = useCallback(async (files: File[]) => {

@@ -47,6 +47,7 @@ export interface Project {
   updated_at: string;
   image_count: number;
   file_size: number;
+  canvas_data?: string;
 }
 
 export interface ProjectCreate {

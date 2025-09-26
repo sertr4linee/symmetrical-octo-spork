@@ -11,7 +11,6 @@ class ProjectBase(BaseModel):
     height: int = Field(..., gt=0, description="Hauteur du canvas en pixels")
     color_mode: str = Field(default="RGB", description="Mode colorimétrique (RGB, CMYK, etc.)")
     resolution: int = Field(default=300, gt=0, description="Résolution en DPI")
-    canvas_data: Optional[str] = Field(None, description="Données JSON du canvas Fabric.js")
 
 
 class ProjectCreate(ProjectBase):
@@ -25,7 +24,6 @@ class ProjectUpdate(BaseModel):
     height: Optional[int] = Field(None, gt=0)
     color_mode: Optional[str] = None
     resolution: Optional[int] = Field(None, gt=0)
-    canvas_data: Optional[str] = Field(None, description="Données JSON du canvas Fabric.js")
 
 
 class Project(ProjectBase):
