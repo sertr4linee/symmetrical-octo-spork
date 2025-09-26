@@ -137,11 +137,11 @@ async def import_image(
             "success": True,
             "data": {
                 "id": result.id,
-                "name": result.name,
+                "filename": result.filename,
                 "width": result.width,
                 "height": result.height,
-                "format": result.format,
-                "size": result.size
+                "content_type": result.content_type,
+                "file_size": result.file_size
             }
         }
         

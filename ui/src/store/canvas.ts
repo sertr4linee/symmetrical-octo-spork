@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 export interface CanvasObject {
   id: string;
-  type: 'rectangle' | 'circle' | 'triangle' | 'diamond' | 'star' | 'polygon' | 'brush' | 'pencil' | 'eraser';
+  type: 'rectangle' | 'circle' | 'triangle' | 'diamond' | 'star' | 'polygon' | 'brush' | 'pencil' | 'eraser' | 'image';
   x: number;
   y: number;
   width?: number;
@@ -13,6 +13,8 @@ export interface CanvasObject {
   strokeColor?: string;
   strokeWidth?: number;
   points?: { x: number; y: number }[];
+  imageId?: string;
+  imageData?: string;
 }
 
 interface CanvasObjectsState {

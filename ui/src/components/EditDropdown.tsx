@@ -65,7 +65,29 @@ const EditDropdown: React.FC<EditDropdownProps> = ({ className = '' }) => {
               
               if (result.success) {
                 console.log('Image imported successfully:', result.data);
-                // TODO: Add the image to canvas or layer
+                
+                // Add the image to canvas
+                const imageData = result.data;
+                const imageObject = {
+                  id: `image_${Date.now()}`,
+                  type: 'image' as const,
+                  x: 50,
+                  y: 50,
+                  width: imageData.width,
+                  height: imageData.height,
+                  color: '#FFFFFF', // Not used for images
+                  imageId: imageData.id,
+                  imageData: `data:${imageData.content_type};base64,${base64Data}`
+                };
+
+                // Dispatch event to add image to canvas
+                window.dispatchEvent(new CustomEvent('canvasAddImage', { 
+                  detail: { 
+                    imageObject,
+                    layerId: imageObject.id,
+                    color: '#FFFFFF'
+                  } 
+                }));
               } else {
                 console.error('Failed to import image:', result.error);
               }

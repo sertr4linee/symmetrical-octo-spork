@@ -141,6 +141,16 @@ const Canvas: React.FC = () => {
             ctx.globalCompositeOperation = 'source-over';
           }
           break;
+
+        case 'image':
+          if (obj.imageData) {
+            const img = new Image();
+            img.onload = () => {
+              ctx.drawImage(img, obj.x, obj.y, obj.width || img.width, obj.height || img.height);
+            };
+            img.src = obj.imageData;
+          }
+          break;
       }
 
       // Draw selection outline
@@ -249,6 +259,16 @@ const Canvas: React.FC = () => {
                 return obj.id;
               }
             }
+          }
+          break;
+
+        case 'image':
+          // Check if click is within image bounds
+          const imgWidth = obj.width || 100;
+          const imgHeight = obj.height || 100;
+          if (adjustedX >= obj.x && adjustedX <= obj.x + imgWidth &&
+              adjustedY >= obj.y && adjustedY <= obj.y + imgHeight) {
+            return obj.id;
           }
           break;
       }
