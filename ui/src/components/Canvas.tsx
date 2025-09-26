@@ -17,6 +17,12 @@ const Canvas: React.FC = () => {
   const { 
     canvas: canvasState, 
     currentProject,
+    layers,
+    activeLayerId,
+    addLayer,
+    removeLayer,
+    setActiveLayer,
+    updateLayer,
     setZoom,
     setPan
   } = useAppStore();
