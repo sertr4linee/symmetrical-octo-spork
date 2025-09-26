@@ -141,6 +141,26 @@ const Canvas: React.FC = () => {
     }
   }, [setActiveLayer]);
 
+  // Test function to add a shape to canvas
+  const addTestShape = useCallback(() => {
+    const canvas = fabricCanvasRef.current;
+    if (!canvas) return;
+
+    const rect = new fabric.Rect({
+      left: Math.random() * 300 + 50,
+      top: Math.random() * 200 + 50,
+      width: 100,
+      height: 100,
+      fill: canvasState.brushColor,
+      strokeWidth: 2,
+      stroke: '#333'
+    });
+
+    canvas.add(rect);
+    canvas.setActiveObject(rect);
+    canvas.renderAll();
+  }, [canvasState.brushColor]);
+
   useEffect(() => {
     if (canvasRef.current && !fabricCanvasRef.current) {
       // Initialize Fabric.js canvas
@@ -194,7 +214,7 @@ const Canvas: React.FC = () => {
         fabricCanvasRef.current = null;
       }
     };
-  }, [handleWheel, handleMouseDown, handleMouseMove, handleMouseUp]);
+  }, [handleWheel, handleMouseDown, handleMouseMove, handleMouseUp, handleObjectSelection, syncObjectsToLayers]);
 
   // Update canvas based on current tool
   useEffect(() => {
