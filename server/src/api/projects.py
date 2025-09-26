@@ -3,8 +3,8 @@ from typing import List, Optional
 from uuid import uuid4
 from datetime import datetime
 
-from models.project import Project, ProjectCreate, ProjectUpdate
-from services.project_service import ProjectService
+from src.models.project import Project, ProjectCreate, ProjectUpdate
+from src.services.project_service import ProjectService
 
 router = APIRouter()
 

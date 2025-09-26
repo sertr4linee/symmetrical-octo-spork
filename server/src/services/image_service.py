@@ -7,8 +7,8 @@ import io
 from sqlalchemy.orm import Session
 from fastapi import Depends
 
-from models.database import get_db, ImageDB, ImageHistoryDB
-from models.image import Image, ImageCreate, ImageProcess, ImageHistory
+from src.models.database import get_db, ImageDB, ImageHistoryDB
+from src.models.image import Image, ImageCreate, ImageProcess, ImageHistory
 
 
 class ImageService:

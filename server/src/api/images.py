@@ -5,8 +5,8 @@ import uuid
 import io
 from PIL import Image as PILImage
 
-from models.image import Image, ImageCreate, ImageProcess
-from services.image_service import ImageService
+from src.models.image import Image, ImageCreate, ImageProcess
+from src.services.image_service import ImageService
 
 router = APIRouter()
 

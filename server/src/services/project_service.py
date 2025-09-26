@@ -7,9 +7,9 @@ import hashlib
 from PIL import Image as PILImage
 import io
 
-from models.database import get_db, ProjectDB, ImageDB
-from models.project import Project, ProjectCreate, ProjectUpdate
-from models.image import Image
+from src.models.database import get_db, ProjectDB, ImageDB
+from src.models.project import Project, ProjectCreate, ProjectUpdate
+from src.models.image import Image
 
 
 class ProjectService:

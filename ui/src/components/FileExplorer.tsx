@@ -21,6 +21,7 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ className = '' }) => {
   
   const electronAPI = useElectronAPI();
   const [isCreating, setIsCreating] = useState(false);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [newProject, setNewProject] = useState<Partial<ProjectCreate>>({
     name: '',
     description: '',
@@ -34,14 +35,14 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ className = '' }) => {
   useEffect(() => {
     let mounted = true;
     
-    if (electronAPI && mounted && projects.length === 0) {
+    if (electronAPI && mounted && !hasLoadedOnce) {
       loadProjects();
     }
     
     return () => {
       mounted = false;
     };
-  }, [electronAPI, projects.length]);
+  }, [electronAPI, hasLoadedOnce]);
 
   const loadProjects = async () => {
     if (!electronAPI) {
@@ -72,6 +73,7 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ className = '' }) => {
       console.error('Load projects error:', error);
     } finally {
       setLoading(false);
+      setHasLoadedOnce(true); // Mark that we've attempted to load at least once
     }
   };
 

@@ -1,7 +1,8 @@
 from fastapi import APIRouter
-from .projects import router as projects_router
-from .images import router as images_router
-from .health import router as health_router
+from src.api.projects import router as projects_router
+from src.api.images import router as images_router
+from src.api.health import router as health_router
+from src.api.filters import router as filters_router
 
 api_router = APIRouter()
 
@@ -21,4 +22,9 @@ api_router.include_router(
     images_router,
     prefix="/images", 
     tags=["Images"]
+)
+
+api_router.include_router(
+    filters_router,
+    tags=["Image Filters"]
 )
