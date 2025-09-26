@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppStore } from '@/store/app';
 import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
@@ -18,7 +18,9 @@ import {
   ZoomIn,
   ZoomOut,
   RotateCcw,
-  Plus
+  Plus,
+  ChevronDown,
+  Palette
 } from 'lucide-react';
 
 interface ToolsSidebarProps {
@@ -28,6 +30,8 @@ interface ToolsSidebarProps {
 }
 
 const ToolsSidebar: React.FC<ToolsSidebarProps> = ({ onAddShape, onClearCanvas, onNewProject }) => {
+  const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
+  
   const { 
     canvas: canvasState, 
     setCurrentTool,
@@ -157,102 +161,119 @@ const ToolsSidebar: React.FC<ToolsSidebarProps> = ({ onAddShape, onClearCanvas, 
         </>
       )}
 
-      {/* Colors - Scrollable */}
+      {/* Colors Dropdown */}
       {canvasState.tool !== 'eraser' && canvasState.tool !== 'select' && (
         <>
-          <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="flex-shrink-0">
             <h3 className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Colors</h3>
             
-            {/* Current Color */}
-            <div className="mb-6">
-              <div className="flex items-center gap-3">
-                <div 
-                  className="w-12 h-12 rounded-lg border-2 border-border flex-shrink-0 shadow-sm"
-                  style={{ backgroundColor: canvasState.brushColor }}
-                />
-                <div>
-                  <div className="text-xs text-muted-foreground">Current</div>
-                  <div className="text-xs text-muted-foreground font-mono">
-                    {canvasState.brushColor.toUpperCase()}
+            {/* Current Color Button */}
+            <Button
+              onClick={() => setIsColorDropdownOpen(!isColorDropdownOpen)}
+              variant="outline"
+              className="w-full justify-start gap-3 p-3 h-auto border-border hover:bg-accent"
+            >
+              <div 
+                className="w-8 h-8 rounded-md border border-border flex-shrink-0"
+                style={{ backgroundColor: canvasState.brushColor }}
+              />
+              <div className="flex-1 text-left">
+                <div className="text-xs font-medium">Current Color</div>
+                <div className="text-xs text-muted-foreground font-mono">
+                  {canvasState.brushColor.toUpperCase()}
+                </div>
+              </div>
+              <ChevronDown className={`w-4 h-4 transition-transform ${isColorDropdownOpen ? 'rotate-180' : ''}`} />
+            </Button>
+
+            {/* Color Palette Dropdown */}
+            {isColorDropdownOpen && (
+              <div className="mt-2 p-3 bg-accent/50 rounded-lg border border-border max-h-64 overflow-y-auto">
+                {/* Primary Colors */}
+                <div className="mb-4">
+                  <label className="text-xs text-muted-foreground mb-2 block font-medium">Primary</label>
+                  <div className="grid grid-cols-5 gap-1">
+                    {primaryColors.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => {
+                          updateCanvasState({ brushColor: color });
+                          setIsColorDropdownOpen(false);
+                        }}
+                        className={`w-6 h-6 rounded border-2 hover:scale-105 transition-all duration-200 ${
+                          canvasState.brushColor === color ? 'ring-2 ring-foreground ring-offset-1' : 'border-border hover:border-foreground/20'
+                        }`}
+                        style={{ backgroundColor: color }}
+                        title={color}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Grey Scale */}
+                <div className="mb-4">
+                  <label className="text-xs text-muted-foreground mb-2 block font-medium">Greyscale</label>
+                  <div className="grid grid-cols-5 gap-1">
+                    {greyScale.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => {
+                          updateCanvasState({ brushColor: color });
+                          setIsColorDropdownOpen(false);
+                        }}
+                        className={`w-6 h-6 rounded border-2 hover:scale-105 transition-all duration-200 ${
+                          canvasState.brushColor === color ? 'ring-2 ring-foreground ring-offset-1' : 'border-border hover:border-foreground/20'
+                        }`}
+                        style={{ backgroundColor: color }}
+                        title={color}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Warm Colors */}
+                <div className="mb-4">
+                  <label className="text-xs text-muted-foreground mb-2 block font-medium">Warm</label>
+                  <div className="grid grid-cols-5 gap-1">
+                    {warmColors.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => {
+                          updateCanvasState({ brushColor: color });
+                          setIsColorDropdownOpen(false);
+                        }}
+                        className={`w-6 h-6 rounded border-2 hover:scale-105 transition-all duration-200 ${
+                          canvasState.brushColor === color ? 'ring-2 ring-foreground ring-offset-1' : 'border-border hover:border-foreground/20'
+                        }`}
+                        style={{ backgroundColor: color }}
+                        title={color}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Cool Colors */}
+                <div className="mb-2">
+                  <label className="text-xs text-muted-foreground mb-2 block font-medium">Cool</label>
+                  <div className="grid grid-cols-5 gap-1">
+                    {coolColors.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => {
+                          updateCanvasState({ brushColor: color });
+                          setIsColorDropdownOpen(false);
+                        }}
+                        className={`w-6 h-6 rounded border-2 hover:scale-105 transition-all duration-200 ${
+                          canvasState.brushColor === color ? 'ring-2 ring-foreground ring-offset-1' : 'border-border hover:border-foreground/20'
+                        }`}
+                        style={{ backgroundColor: color }}
+                        title={color}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Primary Colors */}
-            <div className="mb-6">
-              <label className="text-xs text-muted-foreground mb-3 block font-medium">Primary</label>
-              <div className="grid grid-cols-4 gap-2">
-                {primaryColors.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => {
-                      console.log('Color clicked:', color);
-                      updateCanvasState({ brushColor: color });
-                    }}
-                    className={`w-8 h-8 rounded-lg border-2 hover:scale-105 transition-all duration-200 shadow-sm ${
-                      canvasState.brushColor === color ? 'ring-2 ring-foreground ring-offset-2' : 'border-border hover:border-foreground/20'
-                    }`}
-                    style={{ backgroundColor: color }}
-                    title={color}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Grey Scale */}
-            <div className="mb-6">
-              <label className="text-xs text-muted-foreground mb-3 block font-medium">Greyscale</label>
-              <div className="grid grid-cols-5 gap-2">
-                {greyScale.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => updateCanvasState({ brushColor: color })}
-                    className={`w-7 h-7 rounded-lg border-2 hover:scale-105 transition-all duration-200 shadow-sm ${
-                      canvasState.brushColor === color ? 'ring-2 ring-foreground ring-offset-2' : 'border-border hover:border-foreground/20'
-                    }`}
-                    style={{ backgroundColor: color }}
-                    title={color}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Warm Colors */}
-            <div className="mb-6">
-              <label className="text-xs text-muted-foreground mb-3 block font-medium">Warm</label>
-              <div className="grid grid-cols-5 gap-2">
-                {warmColors.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => updateCanvasState({ brushColor: color })}
-                    className={`w-7 h-7 rounded-lg border-2 hover:scale-105 transition-all duration-200 shadow-sm ${
-                      canvasState.brushColor === color ? 'ring-2 ring-foreground ring-offset-2' : 'border-border hover:border-foreground/20'
-                    }`}
-                    style={{ backgroundColor: color }}
-                    title={color}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Cool Colors */}
-            <div className="mb-6">
-              <label className="text-xs text-muted-foreground mb-3 block font-medium">Cool</label>
-              <div className="grid grid-cols-5 gap-2">
-                {coolColors.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => updateCanvasState({ brushColor: color })}
-                    className={`w-7 h-7 rounded-lg border-2 hover:scale-105 transition-all duration-200 shadow-sm ${
-                      canvasState.brushColor === color ? 'ring-2 ring-foreground ring-offset-2' : 'border-border hover:border-foreground/20'
-                    }`}
-                    style={{ backgroundColor: color }}
-                    title={color}
-                  />
-                ))}
-              </div>
-            </div>
+            )}
           </div>
 
           <Separator className="bg-border flex-shrink-0" />

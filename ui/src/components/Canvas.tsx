@@ -180,6 +180,9 @@ const Canvas: React.FC = () => {
     for (let i = objects.length - 1; i >= 0; i--) {
       const obj = objects[i];
       
+      // Skip eraser objects (not selectable)
+      if (obj.type === 'eraser') continue;
+      
       // Skip if layer is invisible
       const layer = layers.find(l => l.id === obj.id);
       if (!layer || !layer.visible) continue;
@@ -237,8 +240,7 @@ const Canvas: React.FC = () => {
           
         case 'brush':
         case 'pencil':
-        case 'eraser':
-          // Check if click is near any point in the stroke
+          // Check if click is near any point in the stroke (eraser is not selectable)
           if (obj.points && obj.points.length > 0) {
             const tolerance = (canvasState.brushSize || 10) / 2;
             for (const point of obj.points) {
@@ -298,13 +300,17 @@ const Canvas: React.FC = () => {
       };
 
       addObject(newStrokeObject);
-      addLayer({
-        id: newStrokeObject.id,
-        name: `${toolName} Stroke ${objects.length + 1}`,
-        visible: true,
-        opacity: 100,
-        type: 'shape'
-      });
+      
+      // Only add layer for brush and pencil, not for eraser
+      if (canvasState.tool !== 'eraser') {
+        addLayer({
+          id: newStrokeObject.id,
+          name: `${toolName} Stroke ${objects.length + 1}`,
+          visible: true,
+          opacity: 100,
+          type: 'shape'
+        });
+      }
     }
   }, [canvasState.tool, canvasState.zoom, canvasState.pan, canvasState.brushColor, currentProject, getObjectAtPosition, setSelectedObject, addObject, addLayer, objects.length]);
 
