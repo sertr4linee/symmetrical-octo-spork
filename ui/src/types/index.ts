@@ -47,7 +47,19 @@ export interface Project {
   updated_at: string;
   image_count: number;
   file_size: number;
-  canvas_data?: string;
+
+}
+
+// Layer types
+export interface Layer {
+  id: string;
+  name: string;
+  visible: boolean;
+  opacity: number;
+  type: 'image' | 'text' | 'shape' | 'background';
+  fabricObjectId?: string;
+  blendMode?: 'normal' | 'multiply' | 'screen' | 'overlay' | 'soft-light' | 'hard-light';
+  locked?: boolean;
 }
 
 export interface ProjectCreate {
