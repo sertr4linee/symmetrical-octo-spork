@@ -90,3 +90,33 @@ async def upload_image_to_project(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
+
+
+@router.put("/{project_id}/canvas")
+async def save_canvas_data(
+    project_id: str,
+    canvas_data: dict,  # Will contain: canvas_json (string)
+    project_service: ProjectService = Depends()
+):
+    """Save canvas state for a project"""
+    try:
+        # Verify project exists
+        project = await project_service.get_project(project_id)
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        canvas_json = canvas_data.get('canvas_json', '')
+        if not canvas_json:
+            raise HTTPException(status_code=400, detail="canvas_json is required")
+        
+        success = await project_service.save_canvas_data(project_id, canvas_json)
+        
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to save canvas data")
+        
+        return {"message": "Canvas data saved successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save canvas: {str(e)}")

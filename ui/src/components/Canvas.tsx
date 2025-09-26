@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 import { fabric } from 'fabric';
 import { useAppStore } from '@/store/app';
+import { useElectronAPI } from '@/hooks/useElectronAPI';
 import DropZone from './DropZone';
 
 // Extend fabric.Canvas with custom properties

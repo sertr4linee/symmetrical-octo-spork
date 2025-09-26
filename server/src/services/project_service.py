@@ -172,6 +172,24 @@ class ProjectService:
             "updated_at": db_image.updated_at.isoformat() if db_image.updated_at else None,
             # Note: 'data' is excluded for performance reasons
         }
+
+    async def save_canvas_data(self, project_id: str, canvas_data: str) -> bool:
+        """Sauvegarder les données du canvas pour un projet"""
+        try:
+            db_project = self.db.query(ProjectDB).filter(ProjectDB.id == project_id).first()
+            
+            if not db_project:
+                return False
+            
+            db_project.canvas_data = canvas_data
+            self.db.commit()
+            
+            return True
+            
+        except Exception as e:
+            self.db.rollback()
+            print(f"Error saving canvas data: {e}")
+            return False
     
     def _db_to_model(self, db_project: ProjectDB) -> Project:
         return Project(
@@ -182,6 +200,7 @@ class ProjectService:
             height=db_project.height,
             color_mode=db_project.color_mode,
             resolution=db_project.resolution,
+            canvas_data=db_project.canvas_data,
             created_at=db_project.created_at,
             updated_at=db_project.updated_at,
             image_count=db_project.image_count,
