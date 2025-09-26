@@ -19,8 +19,11 @@ const Canvas: React.FC = () => {
     canvas: canvasState, 
     currentProject,
     setZoom,
-    setPan 
+    setPan,
+    setError 
   } = useAppStore();
+  
+  const electronAPI = useElectronAPI();
 
   // Handle wheel zoom
   const handleWheel = useCallback((opt: fabric.IEvent | any) => {
