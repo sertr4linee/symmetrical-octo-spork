@@ -55,6 +55,7 @@ interface AppState {
   // Canvas actions for sidebar
   createShape: (shapeType: 'rectangle' | 'circle' | 'triangle' | 'diamond' | 'star' | 'polygon') => void;
   clearCanvas: () => void;
+  clearShapeLayers: () => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -327,7 +328,12 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           layers: state.layers.filter(layer => layer.type !== 'shape')
         }));
-      }
+      },
+      
+      clearShapeLayers: () =>
+        set((state) => ({
+          layers: state.layers.filter(layer => layer.type !== 'shape')
+        }))
     }),
     {
       name: 'bettergimp-store',

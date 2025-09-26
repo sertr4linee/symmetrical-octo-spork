@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAppStore } from '@/store/app';
+import { useCanvasObjects } from '@/store/canvas';
 import { Layer } from '@/types';
 import { Eye, EyeOff, Trash2, Plus, ChevronUp, ChevronDown } from 'lucide-react';
 
@@ -14,6 +15,8 @@ const LayerPanel: React.FC = () => {
     moveLayer, 
     updateLayerOpacity 
   } = useAppStore();
+  
+  const { removeObject } = useCanvasObjects();
 
   const handleAddLayer = () => {
     const newLayer: Layer = {
@@ -28,7 +31,10 @@ const LayerPanel: React.FC = () => {
 
   const handleRemoveLayer = (layerId: string) => {
     if (layers.length <= 1) return; // Keep at least one layer
+    
+    // Remove from both stores
     removeLayer(layerId);
+    removeObject(layerId); // Remove corresponding canvas object
   };
 
   const handleMoveLayer = (layerId: string, direction: 'up' | 'down') => {

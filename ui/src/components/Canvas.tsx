@@ -8,6 +8,7 @@ const Canvas: React.FC = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [cursor, setCursor] = useState('default');
   
   const { objects, selectedObjectId, addObject, updateObject, setSelectedObject, clearObjects } = useCanvasObjects();
   
@@ -15,7 +16,8 @@ const Canvas: React.FC = () => {
     canvas: canvasState, 
     currentProject,
     layers,
-    addLayer
+    addLayer,
+    setActiveLayer
   } = useAppStore();
 
   // Get canvas context
@@ -157,14 +159,19 @@ const Canvas: React.FC = () => {
     ctx.restore();
   }, [objects, getContext, layers, selectedObjectId, canvasState.zoom, canvasState.pan, canvasState.brushSize]);
 
-  // Get object at position for selection
+  // Get object at position for selection - optimized and complete
   const getObjectAtPosition = useCallback((x: number, y: number) => {
     // Adjust coordinates for zoom and pan
     const adjustedX = (x / canvasState.zoom) - canvasState.pan.x;
     const adjustedY = (y / canvasState.zoom) - canvasState.pan.y;
 
+    // Check objects from top to bottom (reverse order)
     for (let i = objects.length - 1; i >= 0; i--) {
       const obj = objects[i];
+      
+      // Skip if layer is invisible
+      const layer = layers.find(l => l.id === obj.id);
+      if (!layer || !layer.visible) continue;
       
       switch (obj.type) {
         case 'rectangle':
@@ -173,6 +180,7 @@ const Canvas: React.FC = () => {
             return obj.id;
           }
           break;
+          
         case 'circle':
           const centerX = obj.x + (obj.width || 100) / 2;
           const centerY = obj.y + (obj.height || 100) / 2;
@@ -182,10 +190,56 @@ const Canvas: React.FC = () => {
             return obj.id;
           }
           break;
+          
+        case 'triangle':
+          // Simple bounding box check for triangle
+          if (adjustedX >= obj.x && adjustedX <= obj.x + (obj.width || 100) &&
+              adjustedY >= obj.y && adjustedY <= obj.y + (obj.height || 100)) {
+            return obj.id;
+          }
+          break;
+          
+        case 'diamond':
+          // Diamond collision detection using rotated square bounds
+          const diamondCenterX = obj.x + (obj.width || 100) / 2;
+          const diamondCenterY = obj.y + (obj.height || 100) / 2;
+          const diamondSize = (obj.width || 100) / 2;
+          
+          // Manhattan distance check for diamond
+          const dx = Math.abs(adjustedX - diamondCenterX);
+          const dy = Math.abs(adjustedY - diamondCenterY);
+          if (dx / diamondSize + dy / diamondSize <= 1) {
+            return obj.id;
+          }
+          break;
+          
+        case 'star':
+          // Simple bounding circle for star
+          const starCenterX = obj.x + (obj.width || 100) / 2;
+          const starCenterY = obj.y + (obj.height || 100) / 2;
+          const starRadius = (obj.width || 100) / 2;
+          const starDistance = Math.sqrt((adjustedX - starCenterX) ** 2 + (adjustedY - starCenterY) ** 2);
+          if (starDistance <= starRadius) {
+            return obj.id;
+          }
+          break;
+          
+        case 'brush':
+          // Check if click is near any point in the brush stroke
+          if (obj.points && obj.points.length > 0) {
+            const tolerance = (canvasState.brushSize || 10) / 2;
+            for (const point of obj.points) {
+              const pointDistance = Math.sqrt((adjustedX - point.x) ** 2 + (adjustedY - point.y) ** 2);
+              if (pointDistance <= tolerance) {
+                return obj.id;
+              }
+            }
+          }
+          break;
       }
     }
     return null;
-  }, [objects, canvasState.zoom, canvasState.pan]);
+  }, [objects, canvasState.zoom, canvasState.pan, canvasState.brushSize, layers]);
 
   // Handle mouse events
   const handleMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -199,11 +253,21 @@ const Canvas: React.FC = () => {
     if (canvasState.tool === 'select') {
       const objectId = getObjectAtPosition(x, y);
       if (objectId) {
-        setSelectedObject(objectId);
-        setIsDragging(true);
-        setDragStart({ x, y });
+        // If clicking on already selected object, just prepare for drag
+        if (selectedObjectId === objectId) {
+          setIsDragging(true);
+          setDragStart({ x, y });
+        } else {
+          // Select new object and activate its layer
+          setSelectedObject(objectId);
+          setActiveLayer(objectId);
+          setIsDragging(true);
+          setDragStart({ x, y });
+        }
       } else {
+        // Click on empty area - deselect
         setSelectedObject(null);
+        setIsDragging(false);
       }
     } else if (canvasState.tool === 'brush') {
       setIsDrawing(true);
@@ -237,6 +301,20 @@ const Canvas: React.FC = () => {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
+
+    // Update cursor based on tool and hover state
+    if (canvasState.tool === 'select') {
+      const objectId = getObjectAtPosition(x, y);
+      if (isDragging) {
+        setCursor('move');
+      } else if (objectId) {
+        setCursor(selectedObjectId === objectId ? 'move' : 'pointer');
+      } else {
+        setCursor('default');
+      }
+    } else if (canvasState.tool === 'brush') {
+      setCursor('crosshair');
+    }
 
     if (canvasState.tool === 'brush' && isDrawing) {
       const adjustedX = (x / canvasState.zoom) - canvasState.pan.x;
@@ -327,10 +405,11 @@ const Canvas: React.FC = () => {
         <div className="w-full h-full flex items-center justify-center p-4">
           <canvas
             ref={canvasRef}
-            className="bg-white shadow-lg cursor-crosshair"
+            className="bg-white shadow-lg"
             style={{
               transform: `scale(${canvasState.zoom}) translate(${canvasState.pan.x}px, ${canvasState.pan.y}px)`,
-              transformOrigin: 'center center'
+              transformOrigin: 'center center',
+              cursor: cursor
             }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
