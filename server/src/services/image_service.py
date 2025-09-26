@@ -159,7 +159,6 @@ class ImageService:
     
     async def create_image_with_data(self, image_import: 'ImageImport', image_data: bytes) -> Image:
         """Create an image with binary data directly"""
-        # Create ImageCreate object with the data
         image_create_with_data = ImageCreate(
             filename=image_import.name,
             content_type=f"image/{image_import.format}",

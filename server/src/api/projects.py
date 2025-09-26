@@ -72,17 +72,14 @@ async def get_project_images(
 @router.post("/{project_id}/images")
 async def upload_image_to_project(
     project_id: str,
-    image_data: dict,  # Will contain: name, data (base64), size, type, etc.
+    image_data: dict,
     project_service: ProjectService = Depends()
 ):
-    """Upload an image to a specific project"""
     try:
-        # Verify project exists
         project = await project_service.get_project(project_id)
         if not project:
             raise HTTPException(status_code=404, detail="Project not found")
         
-        # Upload image to project
         image = await project_service.add_image_to_project(project_id, image_data)
         return image
         
@@ -98,14 +95,11 @@ async def export_project(
     format: Optional[str] = "png",
     project_service: ProjectService = Depends()
 ):
-    """Export a project as a rendered image"""
     try:
-        # Verify project exists
         project = await project_service.get_project(project_id)
         if not project:
             raise HTTPException(status_code=404, detail="Project not found")
         
-        # For now, return a simple response - this would need integration with the C++ core
         return {
             "success": True,
             "message": f"Project {project.name} exported successfully",

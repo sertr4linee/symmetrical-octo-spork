@@ -8,10 +8,8 @@ import os
 import sys
 from pathlib import Path
 
-# Add src to path for relative imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-# Import components
 from api.router import api_router
 from models.database import engine, Base
 
@@ -19,12 +17,9 @@ from models.database import engine, Base
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Gestionnaire de cycle de vie de l'application"""
-    # Phase de démarrage
-    print("🚀 Démarrage du serveur...")
+    print("démarrage du serveur...")
     
-    # Initialisation de la base de données
     try:
-        # Utiliser l'approche synchrone pour SQLAlchemy
         Base.metadata.create_all(bind=engine)
         print("✅ Base de données initialisée")
     except Exception as e:
@@ -33,10 +28,8 @@ async def lifespan(app: FastAPI):
     
     print("✅ Serveur prêt!")
     
-    # Yield control - this separates startup from shutdown
     yield
     
-    # Phase d'arrêt
     print("🛑 Arrêt du serveur...")
     print("✅ Nettoyage terminé")
 
@@ -78,7 +71,6 @@ def create_app() -> FastAPI:
 
 
 def main():
-    """Point d'entrée principal"""
     app = create_app()
     
     host = os.getenv("HOST", "127.0.0.1")

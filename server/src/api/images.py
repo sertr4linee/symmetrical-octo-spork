@@ -104,24 +104,19 @@ async def import_image(
     import_data: dict,
     image_service: ImageService = Depends()
 ):
-    """Import an image from base64 data into a project"""
     try:
         name = import_data.get('name', 'imported_image.png')
         data = import_data.get('data', '')
         format = import_data.get('format', 'png')
         
-        # Remove data URL prefix if present
         if data.startswith('data:'):
             data = data.split(',')[1]
         
-        # Decode base64 data
-        image_data = base64.b64decode(data)
+            image_data = base64.b64decode(data)
         
-        # Create PIL Image to validate and get dimensions
         pil_image = PILImage.open(io.BytesIO(image_data))
         width, height = pil_image.size
         
-        # Create image record
         image_import = ImageImport(
             name=name,
             project_id=project_id,
@@ -131,7 +126,6 @@ async def import_image(
             size=len(image_data)
         )
         
-        # Save image through service
         result = await image_service.create_image_with_data(image_import, image_data)
         return {
             "success": True,
@@ -155,24 +149,20 @@ async def export_image(
     format: Optional[str] = "png",
     image_service: ImageService = Depends()
 ):
-    """Export an image in the specified format"""
     try:
         image_data = await image_service.get_image_data(image_id)
         if not image_data:
             raise HTTPException(status_code=404, detail="Image not found")
         
-        # Convert to requested format if different
         pil_image = PILImage.open(io.BytesIO(image_data.data))
         
         output_buffer = io.BytesIO()
         if format.lower() == 'jpg' or format.lower() == 'jpeg':
-            # Convert to RGB for JPEG (removes alpha channel)
             if pil_image.mode in ('RGBA', 'P'):
                 pil_image = pil_image.convert('RGB')
             pil_image.save(output_buffer, format='JPEG', quality=95)
             media_type = "image/jpeg"
         else:
-            # Default to PNG
             pil_image.save(output_buffer, format='PNG')
             media_type = "image/png"
         

@@ -11,7 +11,6 @@ bool ImageExporter::exportImage(const Image& image, const std::string& filename,
         return false;
     }
 
-    // Déterminer le format depuis les options ou l'extension
     ExportFormat format = options.format;
     if (format == ExportFormat::PNG && filename.find('.') != std::string::npos) {
         format = detectFormat(filename);
@@ -64,7 +63,7 @@ ExportFormat ImageExporter::detectFormat(const std::string& filename) {
     if (ext == ".tiff" || ext == ".tif") return ExportFormat::TIFF;
     if (ext == ".webp") return ExportFormat::WEBP;
     
-    return ExportFormat::PNG; // Défaut
+    return ExportFormat::PNG;
 }
 
 bool ImageExporter::isFormatSupported(ExportFormat format) {
@@ -99,12 +98,10 @@ bool ImageExporter::exportJPEG(const Image& image, const std::string& filename, 
     compression_params.push_back(cv::IMWRITE_JPEG_QUALITY);
     compression_params.push_back(std::clamp(options.quality, 0, 100));
     
-    // Convertir en BGR si nécessaire (JPEG ne supporte pas l'alpha)
     cv::Mat output = image.data();
     if (image.channels() == 4) {
         cv::cvtColor(image.data(), output, cv::COLOR_BGRA2BGR);
     } else if (image.channels() == 3 && image.data().type() == CV_8UC3) {
-        // S'assurer que c'est en BGR pour OpenCV
         output = image.data();
     }
     
@@ -136,7 +133,7 @@ bool ImageExporter::exportWEBP(const Image& image, const std::string& filename, 
     
     if (options.lossless) {
         compression_params.push_back(cv::IMWRITE_WEBP_QUALITY);
-        compression_params.push_back(101); // 101 = lossless
+        compression_params.push_back(101);
     } else {
         compression_params.push_back(cv::IMWRITE_WEBP_QUALITY);
         compression_params.push_back(std::clamp(options.quality, 0, 100));

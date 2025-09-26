@@ -71,28 +71,22 @@ class ProjectService:
         return True
     
     async def get_project_images(self, project_id: str) -> List[dict]:
-        """Obtenir les images d'un projet"""
         images = self.db.query(ImageDB).filter(ImageDB.project_id == project_id).all()
         return [self._image_db_to_dict(img) for img in images]
 
     async def add_image_to_project(self, project_id: str, image_data: dict) -> dict:
-        """Ajouter une image à un projet"""
         try:
-            # Décoder les données base64
             base64_data = image_data.get('data', '')
             if not base64_data:
                 raise ValueError("No image data provided")
             
-            # Décoder base64
             try:
                 binary_data = base64.b64decode(base64_data)
             except Exception as e:
                 raise ValueError(f"Invalid base64 data: {e}")
             
-            # Calculer le checksum
             checksum = hashlib.md5(binary_data).hexdigest()
             
-            # Vérifier si l'image existe déjà (même checksum)
             existing_image = self.db.query(ImageDB).filter(
                 ImageDB.project_id == project_id,
                 ImageDB.checksum == checksum
@@ -101,19 +95,15 @@ class ProjectService:
             if existing_image:
                 return self._image_db_to_dict(existing_image)
             
-            # Essayer d'extraire les dimensions avec PIL si disponible
             width, height, channels = None, None, None
             try:
-                # Try to get image dimensions
                 pil_image = PILImage.open(io.BytesIO(binary_data))
                 width, height = pil_image.size
                 channels = len(pil_image.getbands()) if hasattr(pil_image, 'getbands') else None
                 pil_image.close()
             except:
-                # PIL not available or image format not supported, continue without dimensions
                 pass
             
-            # Créer l'entrée en base
             image_id = str(uuid4())
             db_image = ImageDB(
                 id=image_id,
@@ -123,7 +113,7 @@ class ProjectService:
                 width=width,
                 height=height,
                 channels=channels,
-                color_mode='RGB',  # Default, could be detected from PIL
+                color_mode='RGB',
                 file_size=len(binary_data),
                 checksum=checksum,
                 data=binary_data
@@ -133,7 +123,6 @@ class ProjectService:
             self.db.commit()
             self.db.refresh(db_image)
             
-            # Mettre à jour les statistiques du projet
             await self._update_project_stats(project_id)
             
             return self._image_db_to_dict(db_image)
@@ -143,13 +132,11 @@ class ProjectService:
             raise ValueError(f"Failed to add image: {e}")
 
     async def _update_project_stats(self, project_id: str):
-        """Mettre à jour les statistiques du projet (nombre d'images, taille totale)"""
         images = self.db.query(ImageDB).filter(ImageDB.project_id == project_id).all()
         
         image_count = len(images)
         total_size = sum(img.file_size for img in images)
         
-        # Mettre à jour le projet
         db_project = self.db.query(ProjectDB).filter(ProjectDB.id == project_id).first()
         if db_project:
             db_project.image_count = image_count
@@ -157,7 +144,6 @@ class ProjectService:
             self.db.commit()
 
     def _image_db_to_dict(self, db_image: ImageDB) -> dict:
-        """Convertir ImageDB en dictionnaire"""
         return {
             "id": db_image.id,
             "filename": db_image.filename,

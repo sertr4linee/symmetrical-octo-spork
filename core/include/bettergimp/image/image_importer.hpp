@@ -21,9 +21,9 @@ enum class ImportFormat {
 struct ImportOptions {
     ImportFormat format = ImportFormat::AUTO_DETECT;
     bool preserveAlpha = true;
-    bool convertToRGB = false; // Convertir automatiquement en RGB
-    int maxWidth = 0; // 0 = pas de limite
-    int maxHeight = 0; // 0 = pas de limite
+    bool convertToRGB = false;
+    int maxWidth = 0;
+    int maxHeight = 0;
     bool maintainAspectRatio = true;
 };
 
@@ -41,24 +41,18 @@ public:
     ImageImporter() = default;
     ~ImageImporter() = default;
 
-    // Import d'une image
     static ImportResult importImage(const std::string& filename, Image& output, const ImportOptions& options = {});
     
-    // Import de plusieurs images
     static std::vector<ImportResult> importImages(const std::vector<std::string>& filenames, 
                                                  std::vector<std::unique_ptr<Image>>& outputs,
                                                  const ImportOptions& options = {});
     
-    // Vérifier si un fichier est une image supportée
     static bool isSupportedImageFile(const std::string& filename);
     
-    // Obtenir les informations d'une image sans la charger complètement
     static ImportResult getImageInfo(const std::string& filename);
     
-    // Obtenir la liste des extensions supportées
     static std::vector<std::string> getSupportedExtensions();
     
-    // Détecter le format d'un fichier
     static ImportFormat detectFileFormat(const std::string& filename);
 
 private:

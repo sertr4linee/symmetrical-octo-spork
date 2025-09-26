@@ -1,7 +1,3 @@
-"""
-Endpoints pour le traitement d'images utilisant le core C++
-"""
-
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
@@ -16,8 +12,6 @@ from src.services.image_service import ImageService
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/filters", tags=["Image Filters"])
-
-# Modèles de requête pour les filtres
 
 class GaussianBlurRequest(BaseModel):
     image_id: str = Field(..., description="ID de l'image à traiter")
@@ -42,39 +36,26 @@ class RotateRequest(BaseModel):
     image_id: str = Field(..., description="ID de l'image à traiter")
     angle: float = Field(..., ge=-360.0, le=360.0, description="Angle de rotation en degrés")
 
-# Endpoints d'information
-
 @router.get("/core/info")
 async def get_core_info() -> Dict[str, Any]:
-    """Retourne les informations sur le core de traitement d'images"""
     return core_service.get_core_info()
-
-# Endpoints de traitement
 
 @router.post("/gaussian-blur")
 async def apply_gaussian_blur(
     request: GaussianBlurRequest,
     image_service: ImageService = Depends()
 ) -> StreamingResponse:
-    """
-    Applique un flou gaussien à une image
-    """
     try:
-        # Récupérer l'image depuis la base de données
         db_image = await image_service.get_image(request.image_id)
         if not db_image:
             raise HTTPException(status_code=404, detail="Image not found")
         
-        # Convertir les données binaires en array numpy
         image_array = _bytes_to_numpy(db_image.data)
         
-        # Appliquer le filtre
         filtered_array = core_service.apply_gaussian_blur(image_array, request.sigma)
         
-        # Convertir le résultat en bytes
         result_bytes = _numpy_to_bytes(filtered_array, db_image.format)
         
-        # Retourner l'image filtrée
         return StreamingResponse(
             io.BytesIO(result_bytes), 
             media_type=f"image/{db_image.format.lower()}"
@@ -89,9 +70,6 @@ async def apply_sharpen_filter(
     request: SharpenRequest,
     image_service: ImageService = Depends()
 ) -> StreamingResponse:
-    """
-    Applique un filtre de netteté à une image
-    """
     try:
         db_image = await image_service.get_image(request.image_id)
         if not db_image:
@@ -115,9 +93,6 @@ async def adjust_brightness_contrast(
     request: BrightnessContrastRequest,
     image_service: ImageService = Depends()
 ) -> StreamingResponse:
-    """
-    Ajuste la luminosité et le contraste d'une image
-    """
     try:
         db_image = await image_service.get_image(request.image_id)
         if not db_image:
@@ -143,9 +118,6 @@ async def resize_image(
     request: ResizeRequest,
     image_service: ImageService = Depends()
 ) -> StreamingResponse:
-    """
-    Redimensionne une image
-    """
     try:
         db_image = await image_service.get_image(request.image_id)
         if not db_image:
@@ -171,9 +143,6 @@ async def rotate_image(
     request: RotateRequest,
     image_service: ImageService = Depends()
 ) -> StreamingResponse:
-    """
-    Fait tourner une image
-    """
     try:
         db_image = await image_service.get_image(request.image_id)
         if not db_image:
@@ -192,19 +161,13 @@ async def rotate_image(
         logger.error(f"Error rotating image: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Fonctions utilitaires
-
 def _bytes_to_numpy(image_bytes: bytes) -> np.ndarray:
-    """Convertit des bytes d'image en array numpy"""
     try:
-        # Ouvrir l'image avec Pillow
         image = Image.open(io.BytesIO(image_bytes))
         
-        # Convertir en RGB si nécessaire
         if image.mode != 'RGB':
             image = image.convert('RGB')
         
-        # Convertir en array numpy
         return np.array(image)
         
     except Exception as e:
@@ -212,12 +175,9 @@ def _bytes_to_numpy(image_bytes: bytes) -> np.ndarray:
         raise
 
 def _numpy_to_bytes(image_array: np.ndarray, format: str = "JPEG") -> bytes:
-    """Convertit un array numpy en bytes d'image"""
     try:
-        # Créer une image Pillow
         image = Image.fromarray(image_array.astype(np.uint8))
         
-        # Sauvegarder en bytes
         output = io.BytesIO()
         image.save(output, format=format.upper())
         return output.getvalue()
@@ -225,8 +185,6 @@ def _numpy_to_bytes(image_array: np.ndarray, format: str = "JPEG") -> bytes:
     except Exception as e:
         logger.error(f"Error converting numpy to bytes: {e}")
         raise
-
-# Endpoint pour upload et traitement direct
 
 @router.post("/process-upload")
 async def process_uploaded_image(
@@ -237,17 +195,11 @@ async def process_uploaded_image(
     brightness: Optional[float] = 0.0,
     contrast: Optional[float] = 1.0
 ) -> StreamingResponse:
-    """
-    Traite une image uploadée directement sans la sauvegarder
-    """
     try:
-        # Lire le contenu du fichier
         content = await file.read()
         
-        # Convertir en array numpy
         image_array = _bytes_to_numpy(content)
         
-        # Appliquer le filtre demandé
         if filter_type == "gaussian_blur":
             result_array = core_service.apply_gaussian_blur(image_array, sigma or 1.0)
         elif filter_type == "sharpen":
@@ -259,7 +211,6 @@ async def process_uploaded_image(
         else:
             raise HTTPException(status_code=400, detail="Unsupported filter type")
         
-        # Convertir le résultat en bytes
         result_bytes = _numpy_to_bytes(result_array, "JPEG")
         
         return StreamingResponse(

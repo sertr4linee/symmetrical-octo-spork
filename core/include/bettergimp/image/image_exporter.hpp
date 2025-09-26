@@ -18,9 +18,9 @@ enum class ExportFormat {
 
 struct ExportOptions {
     ExportFormat format = ExportFormat::PNG;
-    int quality = 90; // Pour JPEG (0-100)
-    bool lossless = true; // Pour WEBP
-    int compression = 1; // Pour PNG (0-9)
+    int quality = 90;
+    bool lossless = true;
+    int compression = 1;
 };
 
 class ImageExporter {
@@ -28,22 +28,16 @@ public:
     ImageExporter() = default;
     ~ImageExporter() = default;
 
-    // Export d'une image unique
     static bool exportImage(const Image& image, const std::string& filename, const ExportOptions& options = {});
     
-    // Export de plusieurs images en batch
     static bool exportImages(const std::vector<std::pair<const Image*, std::string>>& imageFiles, const ExportOptions& options = {});
     
-    // Obtenir l'extension de fichier pour un format
     static std::string getExtension(ExportFormat format);
     
-    // Détecter le format depuis l'extension
     static ExportFormat detectFormat(const std::string& filename);
     
-    // Vérifier si un format est supporté
     static bool isFormatSupported(ExportFormat format);
     
-    // Obtenir la liste des formats supportés
     static std::vector<ExportFormat> getSupportedFormats();
 
 private:
