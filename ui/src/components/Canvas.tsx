@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 import { fabric } from 'fabric';
 import { useAppStore } from '@/store/app';
+import DropZone from './DropZone';
 
 // Extend fabric.Canvas with custom properties
 interface ExtendedCanvas extends fabric.Canvas {
@@ -165,69 +166,122 @@ const Canvas: React.FC = () => {
     }
   }, [canvasState.zoom, canvasState.pan]);
 
-  return (
-    <div 
-      className="flex-1 flex items-center justify-center canvas-container overflow-auto"
-      style={{ 
-        padding: '40px',
-        backgroundImage: `
-          linear-gradient(45deg, #f1f5f9 25%, transparent 25%),
-          linear-gradient(-45deg, #f1f5f9 25%, transparent 25%),
-          linear-gradient(45deg, transparent 75%, #f1f5f9 75%),
-          linear-gradient(-45deg, transparent 75%, #f1f5f9 75%)
-        `,
-        backgroundSize: '20px 20px',
-        backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px'
-      }}
-    >
-      <div className="relative border-2 border-border rounded-lg shadow-xl bg-white" style={{ 
-        minWidth: '600px',
-        minHeight: '400px'
-      }}>
-        <canvas
-          ref={canvasRef}
-          className="block"
-          style={{
-            maxWidth: '100%',
-            maxHeight: '100%',
-          }}
-        />
+  // Handle dropped images on canvas
+  const handleFilesDropped = useCallback(async (files: File[]) => {
+    const canvas = fabricCanvasRef.current;
+    if (!canvas) return;
+
+    for (const file of files) {
+      try {
+        // Create image element
+        const img = new Image();
+        const url = URL.createObjectURL(file);
         
-        {/* Canvas overlay info */}
-        <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
-          {currentProject ? (
-            <span>
-              {currentProject.name} - {currentProject.width}x{currentProject.height}
-            </span>
-          ) : (
-            <span>No project loaded</span>
+        img.onload = () => {
+          // Create fabric image object
+          const fabricImg = new fabric.Image(img, {
+            left: 100 + Math.random() * 200,
+            top: 100 + Math.random() * 200,
+            scaleX: 0.5,
+            scaleY: 0.5,
+          });
+          
+          canvas.add(fabricImg);
+          canvas.renderAll();
+          
+          // Clean up object URL
+          URL.revokeObjectURL(url);
+        };
+        
+        img.src = url;
+      } catch (error) {
+        console.error('Error loading image:', error);
+      }
+    }
+  }, []);
+
+  return (
+    <DropZone 
+      onFilesDropped={handleFilesDropped}
+      className="flex-1 flex items-center justify-center canvas-container overflow-auto"
+      disabled={!currentProject}
+      maxFiles={5}
+      maxSize={10 * 1024 * 1024} // 10MB max per file
+    >
+      <div 
+        className="w-full h-full flex items-center justify-center"
+        style={{ 
+          padding: '40px',
+          backgroundImage: `
+            linear-gradient(45deg, #f1f5f9 25%, transparent 25%),
+            linear-gradient(-45deg, #f1f5f9 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #f1f5f9 75%),
+            linear-gradient(-45deg, transparent 75%, #f1f5f9 75%)
+          `,
+          backgroundSize: '20px 20px',
+          backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px'
+        }}
+      >
+        <div className="relative border-2 border-border rounded-lg shadow-xl bg-white" style={{ 
+          minWidth: '600px',
+          minHeight: '400px'
+        }}>
+          <canvas
+            ref={canvasRef}
+            className="block"
+            style={{
+              maxWidth: '100%',
+              maxHeight: '100%',
+            }}
+          />
+          
+          {/* Canvas overlay info */}
+          <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
+            {currentProject ? (
+              <span>
+                {currentProject.name} - {currentProject.width}x{currentProject.height}
+              </span>
+            ) : (
+              <span>No project loaded - Open a project to enable drag & drop</span>
+            )}
+          </div>
+          
+          {/* Zoom controls */}
+          <div className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs flex items-center gap-2">
+            <button 
+              onClick={() => setZoom(Math.max(0.1, canvasState.zoom - 0.1))}
+              className="hover:bg-white/20 px-1 rounded"
+            >
+              -
+            </button>
+            <span>{Math.round(canvasState.zoom * 100)}%</span>
+            <button 
+              onClick={() => setZoom(Math.min(5, canvasState.zoom + 0.1))}
+              className="hover:bg-white/20 px-1 rounded"
+            >
+              +
+            </button>
+            <button 
+              onClick={() => setZoom(1)}
+              className="hover:bg-white/20 px-1 rounded ml-1"
+            >
+              100%
+            </button>
+          </div>
+          
+          {/* No project overlay */}
+          {!currentProject && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-50/90 backdrop-blur-sm rounded-lg">
+              <div className="text-center text-gray-500">
+                <div className="text-2xl mb-2">🎨</div>
+                <div className="font-medium">No Project Loaded</div>
+                <div className="text-sm mt-1">Open or create a project to start editing</div>
+              </div>
+            </div>
           )}
         </div>
-        
-        {/* Zoom controls */}
-        <div className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs flex items-center gap-2">
-          <button 
-            onClick={() => setZoom(Math.max(0.1, canvasState.zoom - 0.1))}
-            className="hover:bg-white/20 px-1 rounded"
-          >
-            -
-          </button>
-          <span>{Math.round(canvasState.zoom * 100)}%</span>
-          <button 
-            onClick={() => setZoom(Math.min(5, canvasState.zoom + 0.1))}
-            className="hover:bg-white/20 px-1 rounded"
-          >
-            +
-          </button>
-          <button 
-            onClick={() => setZoom(1)}
-            className="hover:bg-white/20 px-1 rounded ml-1"
-          >
-            100%
-          </button>
-        </div>
       </div>
-    </div>
+    </DropZone>
   );
 };
 
