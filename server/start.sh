@@ -4,9 +4,8 @@
 cd "$(dirname "$0")"
 export PYTHONPATH="$PWD/src:$PYTHONPATH"
 
-echo "🚀 Starting Better GIMP Backend API..."
-echo "📁 Working directory: $PWD"
-echo "🐍 Python path: $PYTHONPATH"
+echo "starting better gimp APapiI..."
+echo "working dir: $PWD"
 
 ./venv/bin/python -c "
 import sys
