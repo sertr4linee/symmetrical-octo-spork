@@ -31,7 +31,8 @@ const Canvas: React.FC = () => {
     layers,
     addLayer,
     removeLayer,
-    setZoom
+    setZoom,
+    setCurrentTool
   } = useAppStore();
 
   // Get canvas context
@@ -338,6 +339,28 @@ const Canvas: React.FC = () => {
     const x = (e.clientX - rect.left) * (canvas.width / rect.width);
     const y = (e.clientY - rect.top) * (canvas.height / rect.height);
 
+    if (canvasState.tool === 'select') {
+      // Handle object selection and dragging
+      const clickedObject = getObjectAtPosition(x, y);
+      
+      if (clickedObject) {
+        setSelectedObject(clickedObject.id);
+        setIsDragging(true);
+        setDragStart({ x, y });
+        
+        // Set active layer
+        const layer = layers.find(l => l.id === clickedObject.id);
+        if (layer) {
+          // Sync with layer panel selection
+          console.log(`Selected object: ${clickedObject.type} (${clickedObject.id})`);
+        }
+      } else {
+        // Clicked on empty area - deselect
+        setSelectedObject(null);
+      }
+      return;
+    }
+
     setIsDrawing(true);
 
     if (canvasState.tool === 'brush') {
@@ -397,11 +420,47 @@ const Canvas: React.FC = () => {
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    if (!canvas || !isDrawing || !currentProject) return;
+    if (!canvas || !currentProject) return;
 
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX - rect.left) * (canvas.width / rect.width);
     const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+    // Handle object dragging in select mode
+    if (canvasState.tool === 'select' && isDragging && selectedObject) {
+      const deltaX = x - dragStart.x;
+      const deltaY = y - dragStart.y;
+      
+      setObjects(prevObjects => 
+        prevObjects.map(obj => {
+          if (obj.id === selectedObject) {
+            if (obj.type === 'brush' && obj.points) {
+              // Move all points for brush strokes
+              return {
+                ...obj,
+                points: obj.points.map(point => ({
+                  x: point.x + deltaX,
+                  y: point.y + deltaY
+                }))
+              };
+            } else {
+              // Move regular shapes
+              return {
+                ...obj,
+                x: obj.x + deltaX,
+                y: obj.y + deltaY
+              };
+            }
+          }
+          return obj;
+        })
+      );
+      
+      setDragStart({ x, y });
+      return;
+    }
+
+    if (!isDrawing) return;
 
     if (canvasState.tool === 'brush') {
       // Add point to current brush stroke
@@ -420,6 +479,7 @@ const Canvas: React.FC = () => {
 
   const handleMouseUp = useCallback(() => {
     setIsDrawing(false);
+    setIsDragging(false);
   }, []);
 
   // Add test shape function
@@ -631,6 +691,14 @@ const Canvas: React.FC = () => {
               className="hover:bg-white/20 px-1 rounded ml-1"
             >
               100%
+            </button>
+            <button 
+              onClick={() => setCurrentTool('select')}
+              className={`hover:bg-white/20 px-2 py-1 rounded ml-1 text-xs ${
+                canvasState.tool === 'select' ? 'bg-orange-600' : 'bg-gray-600'
+              }`}
+            >
+              Select Mode
             </button>
             <button 
               onClick={addTestShape}
