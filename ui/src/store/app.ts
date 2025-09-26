@@ -49,13 +49,29 @@ interface AppState {
   moveLayer: (layerId: string, newIndex: number) => void;
   updateLayerOpacity: (layerId: string, opacity: number) => void;
   updateLayer: (layerId: string, updates: Partial<Layer>) => void;
+  
+  // Canvas actions for sidebar
+  createShape: (shapeType: 'rectangle' | 'circle' | 'triangle' | 'diamond' | 'star' | 'polygon') => void;
+  clearCanvas: () => void;
 }
 
 export const useAppStore = create<AppState>()(
   devtools(
     (set) => ({
-      // Initial state
-      currentProject: null,
+      // Initial state with default project
+      currentProject: {
+        id: 'default',
+        name: 'Untitled Project',
+        description: 'A new project',
+        width: 800,
+        height: 600,
+        color_mode: 'RGB' as const,
+        resolution: 72,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        image_count: 0,
+        file_size: 0
+      },
       projects: [],
       
       canvas: {
@@ -241,6 +257,37 @@ export const useAppStore = create<AppState>()(
               : layer
           ),
         })),
+      
+      // Canvas actions for sidebar
+      createShape: (shapeType) =>
+        set((state) => {
+          const layerId = `${shapeType}_${Date.now()}`;
+          const newLayer: Layer = {
+            id: layerId,
+            name: `${shapeType.charAt(0).toUpperCase() + shapeType.slice(1)} ${state.layers.length + 1}`,
+            visible: true,
+            opacity: 100,
+            type: 'shape'
+          };
+          
+          // Dispatch a custom event for the Canvas component to handle
+          window.dispatchEvent(new CustomEvent('canvasCreateShape', { 
+            detail: { shapeType, layerId, color: state.canvas.brushColor } 
+          }));
+          
+          return {
+            layers: [...state.layers, newLayer]
+          };
+        }),
+      
+      clearCanvas: () => {
+        // Dispatch event to clear canvas objects
+        window.dispatchEvent(new CustomEvent('canvasClear'));
+        
+        set((state) => ({
+          layers: state.layers.filter(layer => layer.type !== 'shape')
+        }));
+      }
     }),
     {
       name: 'bettergimp-store',

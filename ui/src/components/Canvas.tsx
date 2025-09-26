@@ -30,9 +30,7 @@ const Canvas: React.FC = () => {
     currentProject,
     layers,
     addLayer,
-    removeLayer,
-    setZoom,
-    setCurrentTool
+    removeLayer
   } = useAppStore();
 
   // Get canvas context
@@ -483,73 +481,7 @@ const Canvas: React.FC = () => {
   }, []);
 
   // Add test shape function
-  const addTestShape = useCallback(() => {
-    if (!currentProject) return;
 
-    const newRect: CanvasObject = {
-      id: `rect_${Date.now()}`,
-      type: 'rectangle',
-      x: 50,
-      y: 50,
-      width: 100,
-      height: 100,
-      color: '#FF0000',
-      strokeColor: '#FFFFFF',
-      strokeWidth: 3
-    };
-
-    setObjects(prev => [...prev, newRect]);
-    
-    // Add to layers
-    addLayer({
-      id: newRect.id,
-      name: `Shape ${layers.length + 1}`,
-      visible: true,
-      opacity: 100,
-      type: 'shape'
-    });
-
-    console.log('✅ Rectangle added successfully!');
-    console.log('Objects count:', objects.length + 1);
-  }, [currentProject, addLayer, layers.length, objects.length]);
-
-  // Add specific shape type function
-  const addTestShapeByType = useCallback((shapeType: 'circle' | 'triangle' | 'diamond' | 'star' | 'polygon') => {
-    if (!currentProject) return;
-
-    const newShape: CanvasObject = {
-      id: `${shapeType}_${Date.now()}`,
-      type: shapeType,
-      x: 50 + (objects.length * 20), // Offset each new shape
-      y: 50 + (objects.length * 20),
-      width: 100,
-      height: 100,
-      radius: shapeType === 'circle' ? 50 : undefined,
-      sides: shapeType === 'polygon' ? 6 : undefined,
-      color: canvasState.brushColor,
-      strokeColor: '#FFFFFF',
-      strokeWidth: 2
-    };
-
-    setObjects(prev => [...prev, newShape]);
-    
-    // Add to layers
-    addLayer({
-      id: newShape.id,
-      name: `${shapeType.charAt(0).toUpperCase() + shapeType.slice(1)} ${layers.length + 1}`,
-      visible: true,
-      opacity: 100,
-      type: 'shape'
-    });
-
-    console.log(`✅ ${shapeType} added successfully!`);
-  }, [currentProject, addLayer, layers.length, objects.length, canvasState.brushColor]);
-
-  // Clear all objects
-  const clearCanvas = useCallback(() => {
-    setObjects([]);
-    console.log('Canvas cleared');
-  }, []);
 
   // Initialize canvas
   useEffect(() => {
@@ -561,6 +493,42 @@ const Canvas: React.FC = () => {
     
     redrawCanvas();
   }, [redrawCanvas]);
+
+  // Listen for sidebar actions
+  useEffect(() => {
+    const handleCreateShape = (event: CustomEvent) => {
+      const { shapeType, layerId, color } = event.detail;
+      if (!currentProject) return;
+
+      const newShape: CanvasObject = {
+        id: layerId,
+        type: shapeType,
+        x: 50 + (objects.length * 20),
+        y: 50 + (objects.length * 20),
+        width: 100,
+        height: 100,
+        radius: shapeType === 'circle' ? 50 : undefined,
+        sides: shapeType === 'polygon' ? 6 : undefined,
+        color: color,
+        strokeColor: '#FFFFFF',
+        strokeWidth: 2
+      };
+
+      setObjects(prev => [...prev, newShape]);
+    };
+
+    const handleClearCanvas = () => {
+      setObjects([]);
+    };
+
+    window.addEventListener('canvasCreateShape', handleCreateShape as EventListener);
+    window.addEventListener('canvasClear', handleClearCanvas);
+
+    return () => {
+      window.removeEventListener('canvasCreateShape', handleCreateShape as EventListener);
+      window.removeEventListener('canvasClear', handleClearCanvas);
+    };
+  }, [currentProject, objects.length]);
 
   // Redraw when objects change
   useEffect(() => {
@@ -656,7 +624,7 @@ const Canvas: React.FC = () => {
           />
           
           {/* Canvas overlay info */}
-          <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
+          <div className="absolute top-4 left-4 bg-background/90 text-foreground px-3 py-2 rounded border border-border backdrop-blur-sm text-xs">
             {currentProject ? (
               <span>
                 {currentProject.name} - {currentProject.width}x{currentProject.height}
@@ -666,84 +634,23 @@ const Canvas: React.FC = () => {
             )}
           </div>
           
-          {/* Tool info */}
-          <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
-            Tool: {canvasState.tool} | Size: {canvasState.brushSize}px | Objects: {objects.length}
-          </div>
-          
-          {/* Zoom controls */}
-          <div className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs flex items-center gap-2">
-            <button 
-              onClick={() => setZoom(Math.max(0.1, canvasState.zoom - 0.1))}
-              className="hover:bg-white/20 px-1 rounded"
-            >
-              -
-            </button>
-            <span>{Math.round(canvasState.zoom * 100)}%</span>
-            <button 
-              onClick={() => setZoom(Math.min(5, canvasState.zoom + 0.1))}
-              className="hover:bg-white/20 px-1 rounded"
-            >
-              +
-            </button>
-            <button 
-              onClick={() => setZoom(1)}
-              className="hover:bg-white/20 px-1 rounded ml-1"
-            >
-              100%
-            </button>
-            <button 
-              onClick={() => setCurrentTool('select')}
-              className={`hover:bg-white/20 px-2 py-1 rounded ml-1 text-xs ${
-                canvasState.tool === 'select' ? 'bg-orange-600' : 'bg-gray-600'
-              }`}
-            >
-              Select Mode
-            </button>
-            <button 
-              onClick={addTestShape}
-              className="hover:bg-white/20 px-2 py-1 rounded ml-1 text-xs bg-green-600"
-            >
-              + Rect
-            </button>
-            <button 
-              onClick={() => addTestShapeByType('circle')}
-              className="hover:bg-white/20 px-2 py-1 rounded ml-1 text-xs bg-blue-600"
-            >
-              + Circle
-            </button>
-            <button 
-              onClick={() => addTestShapeByType('triangle')}
-              className="hover:bg-white/20 px-2 py-1 rounded ml-1 text-xs bg-purple-600"
-            >
-              + Triangle
-            </button>
-            <button 
-              onClick={() => addTestShapeByType('diamond')}
-              className="hover:bg-white/20 px-2 py-1 rounded ml-1 text-xs bg-yellow-600"
-            >
-              + Diamond
-            </button>
-            <button 
-              onClick={() => addTestShapeByType('star')}
-              className="hover:bg-white/20 px-2 py-1 rounded ml-1 text-xs bg-pink-600"
-            >
-              + Star
-            </button>
-            <button 
-              onClick={clearCanvas}
-              className="hover:bg-white/20 px-2 py-1 rounded ml-1 text-xs bg-red-600"
-            >
-              Clear
-            </button>
+          {/* Tool info - simplified */}
+          <div className="absolute top-4 right-4 bg-background/90 text-foreground px-3 py-2 rounded border border-border backdrop-blur-sm text-xs">
+            <div className="flex items-center gap-3">
+              <span className="text-muted-foreground">Tool:</span>
+              <span className="font-medium capitalize">{canvasState.tool}</span>
+              <span className="text-muted-foreground">•</span>
+              <span className="text-muted-foreground">Objects:</span>
+              <span className="font-medium">{objects.length}</span>
+            </div>
           </div>
           
           {/* No project overlay */}
           {!currentProject && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-50/90 backdrop-blur-sm rounded-lg">
-              <div className="text-center text-gray-500">
-                <div className="text-2xl mb-2">🎨</div>
-                <div className="font-medium">No Project Loaded</div>
+            <div className="absolute inset-0 flex items-center justify-center bg-background/90 backdrop-blur-sm rounded-lg border border-border">
+              <div className="text-center text-muted-foreground">
+                <div className="text-2xl mb-3">🎨</div>
+                <div className="font-medium text-foreground">No Project Loaded</div>
                 <div className="text-sm mt-1">Open or create a project to start editing</div>
               </div>
             </div>
