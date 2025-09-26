@@ -68,6 +68,9 @@ const EditDropdown: React.FC<EditDropdownProps> = ({ className = '' }) => {
                 
                 // Add the image to canvas
                 const imageData = result.data;
+                console.log('Image data received:', imageData);
+                console.log('Base64 data preview:', base64Data.substring(0, 100));
+                
                 const imageObject = {
                   id: `image_${Date.now()}`,
                   type: 'image' as const,
@@ -77,8 +80,10 @@ const EditDropdown: React.FC<EditDropdownProps> = ({ className = '' }) => {
                   height: imageData.height,
                   color: '#FFFFFF', // Not used for images
                   imageId: imageData.id,
-                  imageData: `data:${imageData.content_type};base64,${base64Data}`
+                  imageData: base64Data // base64Data already contains data:image/...;base64,...
                 };
+
+                console.log('Created image object:', imageObject);
 
                 // Dispatch event to add image to canvas
                 window.dispatchEvent(new CustomEvent('canvasAddImage', { 

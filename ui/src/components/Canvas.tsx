@@ -9,6 +9,7 @@ const Canvas: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [cursor, setCursor] = useState('default');
+  const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
   
   const { objects, selectedObjectId, addObject, updateObject, setSelectedObject, clearObjects } = useCanvasObjects();
   
@@ -144,11 +145,29 @@ const Canvas: React.FC = () => {
 
         case 'image':
           if (obj.imageData) {
-            const img = new Image();
-            img.onload = () => {
+            let img = imageCache.current.get(obj.id);
+            if (!img) {
+              img = new Image();
+              img.onload = () => {
+                console.log('Image loaded:', obj.id, img!.width, img!.height);
+                redrawCanvas();
+              };
+              img.onerror = (error) => {
+                console.error('Image failed to load:', obj.id, error);
+              };
+              img.src = obj.imageData;
+              imageCache.current.set(obj.id, img);
+              console.log('Creating new image:', obj.id, obj.imageData.substring(0, 50) + '...');
+            }
+            
+            if (img.complete && img.naturalWidth > 0) {
+              console.log('Drawing image:', obj.id, obj.x, obj.y, obj.width, obj.height);
               ctx.drawImage(img, obj.x, obj.y, obj.width || img.width, obj.height || img.height);
-            };
-            img.src = obj.imageData;
+            } else {
+              console.log('Image not ready:', obj.id, 'complete:', img.complete, 'naturalWidth:', img.naturalWidth);
+            }
+          } else {
+            console.log('No image data for:', obj.id);
           }
           break;
       }
@@ -418,12 +437,28 @@ const Canvas: React.FC = () => {
       clearObjects();
     };
 
+    const handleAddImage = (event: CustomEvent) => {
+      const { imageObject, layerId } = event.detail;
+      if (!currentProject) return;
+
+      addObject(imageObject);
+      addLayer({
+        id: layerId,
+        name: `Image ${objects.length + 1}`,
+        visible: true,
+        opacity: 100,
+        type: 'image'
+      });
+    };
+
     window.addEventListener('canvasCreateShape', handleCreateShape as EventListener);
     window.addEventListener('canvasClear', handleClearCanvas);
+    window.addEventListener('canvasAddImage', handleAddImage as EventListener);
 
     return () => {
       window.removeEventListener('canvasCreateShape', handleCreateShape as EventListener);
       window.removeEventListener('canvasClear', handleClearCanvas);
+      window.removeEventListener('canvasAddImage', handleAddImage as EventListener);
     };
   }, [currentProject, objects.length, addObject, clearObjects]);
 
