@@ -86,12 +86,16 @@ set(CORE_SOURCES
     src/core.cpp
     src/image/image.cpp
     src/image/image_processor.cpp
+    src/image/image_exporter.cpp
+    src/image/image_importer.cpp
 )
 
 set(CORE_HEADERS
     include/bettergimp/core.hpp
     include/bettergimp/image/image.hpp
     include/bettergimp/image/image_processor.hpp
+    include/bettergimp/image/image_exporter.hpp
+    include/bettergimp/image/image_importer.hpp
 )
 
 # ====================================
