@@ -262,8 +262,8 @@ const Canvas: React.FC = () => {
     });
 
     // Draw selection border
-    if (selectedObject) {
-      const obj = objects.find(o => o.id === selectedObject);
+    if (selectedObjectId) {
+      const obj = objects.find(o => o.id === selectedObjectId);
       if (obj) {
         ctx.save();
         ctx.strokeStyle = '#0066ff';
