@@ -42,7 +42,8 @@ const Canvas: React.FC = () => {
 
     // Draw objects
     objects.forEach(obj => {
-      if (!layers.find(layer => layer.id === obj.id && layer.visible)) return;
+      // Pour la gomme, on ne vérifie pas la visibilité du calque car on gomme toujours
+      if (obj.type !== 'eraser' && !layers.find(layer => layer.id === obj.id && layer.visible)) return;
       
       ctx.save();
       ctx.fillStyle = obj.color;
