@@ -10,6 +10,11 @@ interface ExtendedCanvas extends fabric.Canvas {
   lastPosY?: number;
 }
 
+// Extend fabric.Object with custom properties
+interface ExtendedFabricObject extends fabric.Object {
+  layerId?: string;
+}
+
 const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fabricCanvasRef = useRef<ExtendedCanvas | null>(null);
@@ -93,6 +98,49 @@ const Canvas: React.FC = () => {
     canvas.selection = true;
   }, []);
 
+  // Sync Fabric.js objects with layers store
+  const syncObjectsToLayers = useCallback(() => {
+    const canvas = fabricCanvasRef.current;
+    if (!canvas) return;
+
+    const objects = canvas.getObjects();
+    
+    // Create layers for objects that don't have corresponding layers
+    objects.forEach((obj, index) => {
+      const extObj = obj as ExtendedFabricObject;
+      if (!extObj.layerId) {
+        const layerId = `object_${Date.now()}_${index}`;
+        extObj.layerId = layerId;
+        
+        // Determine layer type based on object type
+        let layerType: 'image' | 'text' | 'shape' | 'background' = 'shape';
+        if (obj.type === 'image') layerType = 'image';
+        else if (obj.type === 'textbox' || obj.type === 'text') layerType = 'text';
+        
+        const newLayer = {
+          id: layerId,
+          name: `${layerType.charAt(0).toUpperCase() + layerType.slice(1)} ${layers.length + 1}`,
+          visible: obj.visible !== false,
+          opacity: Math.round((obj.opacity || 1) * 100),
+          type: layerType
+        };
+        
+        addLayer(newLayer);
+      }
+    });
+  }, [layers, addLayer]);
+
+  // Handle object selection to sync with active layer
+  const handleObjectSelection = useCallback(() => {
+    const canvas = fabricCanvasRef.current;
+    if (!canvas) return;
+
+    const activeObject = canvas.getActiveObject() as ExtendedFabricObject;
+    if (activeObject && activeObject.layerId) {
+      setActiveLayer(activeObject.layerId);
+    }
+  }, [setActiveLayer]);
+
   useEffect(() => {
     if (canvasRef.current && !fabricCanvasRef.current) {
       // Initialize Fabric.js canvas
@@ -114,6 +162,9 @@ const Canvas: React.FC = () => {
       canvas.on('mouse:down', handleMouseDown);
       canvas.on('mouse:move', handleMouseMove);
       canvas.on('mouse:up', handleMouseUp);
+      canvas.on('selection:created', handleObjectSelection);
+      canvas.on('selection:updated', handleObjectSelection);
+      canvas.on('object:added', syncObjectsToLayers);
 
       // Also add wheel listener directly to canvas element for better compatibility
       const canvasElement = canvasRef.current;
