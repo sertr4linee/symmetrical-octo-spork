@@ -11,6 +11,7 @@ import LoadingScreen from '@/components/LoadingScreen';
 import ErrorMessage from '@/components/ErrorMessage';
 import ElectronWrapper from '@/components/ElectronWrapper';
 import ResizablePanel from '@/components/ResizablePanel';
+import EditDropdown from '@/components/EditDropdown';
 
 const AppContent: React.FC = () => {
   useMenuActions();
@@ -36,7 +37,7 @@ const AppContent: React.FC = () => {
             >
               Open Project
             </span>
-            <span className="hover:text-foreground cursor-pointer">Edit</span>
+            <EditDropdown />
             <span className="hover:text-foreground cursor-pointer">View</span>
             <span className="hover:text-foreground cursor-pointer">Image</span>
             <span className="hover:text-foreground cursor-pointer">Layer</span>

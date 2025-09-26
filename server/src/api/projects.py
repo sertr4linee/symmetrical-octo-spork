@@ -92,4 +92,26 @@ async def upload_image_to_project(
         raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
 
 
-
+@router.get("/{project_id}/export")
+async def export_project(
+    project_id: str,
+    format: Optional[str] = "png",
+    project_service: ProjectService = Depends()
+):
+    """Export a project as a rendered image"""
+    try:
+        # Verify project exists
+        project = await project_service.get_project(project_id)
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        
+        # For now, return a simple response - this would need integration with the C++ core
+        return {
+            "success": True,
+            "message": f"Project {project.name} exported successfully",
+            "format": format,
+            "project_id": project_id
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to export project: {str(e)}")

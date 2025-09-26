@@ -61,7 +61,7 @@ endif()
 find_package(TBB REQUIRED)
 
 # Eigen3
-find_package(Eigen3 3.4 REQUIRED NO_MODULE)
+find_package(Eigen3 REQUIRED NO_MODULE)
 
 # pybind11 for Python bindings
 if(BUILD_PYTHON_BINDINGS)
@@ -214,7 +214,7 @@ endif()
 # ====================================
 # DEMO APPLICATION
 # ====================================
-option(BUILD_DEMO "Build demo application" ON)
+option(BUILD_DEMO "Build demo application" OFF)
 
 if(BUILD_DEMO)
     add_executable(image_processing_demo demo/image_processing_demo.cpp)

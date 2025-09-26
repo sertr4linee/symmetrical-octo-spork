@@ -34,6 +34,15 @@ class ImageCreate(ImageBase):
     data: bytes = Field(..., description="Données binaires de l'image")
 
 
+class ImageImport(BaseModel):
+    name: str = Field(..., description="Nom du fichier")
+    project_id: str = Field(..., description="ID du projet")
+    format: str = Field(..., description="Format de l'image")
+    width: int = Field(..., description="Largeur en pixels")
+    height: int = Field(..., description="Hauteur en pixels")
+    size: int = Field(..., description="Taille du fichier en bytes")
+
+
 class ImageProcess(BaseModel):
     operation: ProcessingOperation = Field(..., description="Type d'opération à effectuer")
     parameters: Dict[str, Any] = Field(default_factory=dict, description="Paramètres de l'opération")

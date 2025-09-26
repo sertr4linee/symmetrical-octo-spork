@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from fastapi import Depends
 
 from src.models.database import get_db, ImageDB, ImageHistoryDB
-from src.models.image import Image, ImageCreate, ImageProcess, ImageHistory
+from src.models.image import Image, ImageCreate, ImageProcess, ImageHistory, ImageImport
 
 
 class ImageService:
@@ -156,3 +156,15 @@ class ImageService:
             timestamp=db_history.timestamp,
             user_id=db_history.user_id
         )
+    
+    async def create_image_with_data(self, image_import: 'ImageImport', image_data: bytes) -> Image:
+        """Create an image with binary data directly"""
+        # Create ImageCreate object with the data
+        image_create_with_data = ImageCreate(
+            filename=image_import.name,
+            content_type=f"image/{image_import.format}",
+            project_id=image_import.project_id,
+            data=image_data
+        )
+        
+        return await self.create_image(image_create_with_data)

@@ -1,11 +1,12 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 from typing import List, Optional
 import uuid
 import io
+import base64
 from PIL import Image as PILImage
 
-from src.models.image import Image, ImageCreate, ImageProcess
+from src.models.image import Image, ImageCreate, ImageProcess, ImageImport
 from src.services.image_service import ImageService
 
 router = APIRouter()
@@ -95,3 +96,95 @@ async def get_image_history(
 ):
     history = await image_service.get_image_history(image_id)
     return {"image_id": image_id, "history": history}
+
+
+@router.post("/import/{project_id}")
+async def import_image(
+    project_id: str,
+    import_data: dict,
+    image_service: ImageService = Depends()
+):
+    """Import an image from base64 data into a project"""
+    try:
+        name = import_data.get('name', 'imported_image.png')
+        data = import_data.get('data', '')
+        format = import_data.get('format', 'png')
+        
+        # Remove data URL prefix if present
+        if data.startswith('data:'):
+            data = data.split(',')[1]
+        
+        # Decode base64 data
+        image_data = base64.b64decode(data)
+        
+        # Create PIL Image to validate and get dimensions
+        pil_image = PILImage.open(io.BytesIO(image_data))
+        width, height = pil_image.size
+        
+        # Create image record
+        image_import = ImageImport(
+            name=name,
+            project_id=project_id,
+            width=width,
+            height=height,
+            format=format,
+            size=len(image_data)
+        )
+        
+        # Save image through service
+        result = await image_service.create_image_with_data(image_import, image_data)
+        return {
+            "success": True,
+            "data": {
+                "id": result.id,
+                "name": result.name,
+                "width": result.width,
+                "height": result.height,
+                "format": result.format,
+                "size": result.size
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error importing image: {str(e)}")
+
+
+@router.get("/{image_id}/export")
+async def export_image(
+    image_id: str,
+    format: Optional[str] = "png",
+    image_service: ImageService = Depends()
+):
+    """Export an image in the specified format"""
+    try:
+        image_data = await image_service.get_image_data(image_id)
+        if not image_data:
+            raise HTTPException(status_code=404, detail="Image not found")
+        
+        # Convert to requested format if different
+        pil_image = PILImage.open(io.BytesIO(image_data.data))
+        
+        output_buffer = io.BytesIO()
+        if format.lower() == 'jpg' or format.lower() == 'jpeg':
+            # Convert to RGB for JPEG (removes alpha channel)
+            if pil_image.mode in ('RGBA', 'P'):
+                pil_image = pil_image.convert('RGB')
+            pil_image.save(output_buffer, format='JPEG', quality=95)
+            media_type = "image/jpeg"
+        else:
+            # Default to PNG
+            pil_image.save(output_buffer, format='PNG')
+            media_type = "image/png"
+        
+        output_buffer.seek(0)
+        
+        return Response(
+            content=output_buffer.getvalue(),
+            media_type=media_type,
+            headers={
+                "Content-Disposition": f"attachment; filename=exported_image.{format}"
+            }
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error exporting image: {str(e)}")

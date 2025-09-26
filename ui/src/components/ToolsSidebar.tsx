@@ -158,34 +158,40 @@ const ToolsSidebar: React.FC<ToolsSidebarProps> = ({ onAddShape, onClearCanvas, 
       )}
 
       {/* Colors - Scrollable */}
-      {(canvasState.tool === 'brush' || canvasState.tool === 'pencil') && (
+      {canvasState.tool !== 'eraser' && canvasState.tool !== 'select' && (
         <>
           <div className="flex-1 min-h-0 overflow-y-auto">
             <h3 className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Colors</h3>
             
             {/* Current Color */}
-            <div className="mb-4">
-              <div className="flex items-center gap-2">
+            <div className="mb-6">
+              <div className="flex items-center gap-3">
                 <div 
-                  className="w-8 h-8 rounded border-2 border-border flex-shrink-0"
+                  className="w-12 h-12 rounded-lg border-2 border-border flex-shrink-0 shadow-sm"
                   style={{ backgroundColor: canvasState.brushColor }}
                 />
-                <span className="text-xs text-muted-foreground font-mono">
-                  {canvasState.brushColor.toUpperCase()}
-                </span>
+                <div>
+                  <div className="text-xs text-muted-foreground">Current</div>
+                  <div className="text-xs text-muted-foreground font-mono">
+                    {canvasState.brushColor.toUpperCase()}
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Primary Colors */}
-            <div className="mb-4">
-              <label className="text-xs text-muted-foreground mb-2 block">Primary</label>
-              <div className="grid grid-cols-5 gap-1">
+            <div className="mb-6">
+              <label className="text-xs text-muted-foreground mb-3 block font-medium">Primary</label>
+              <div className="grid grid-cols-4 gap-2">
                 {primaryColors.map((color) => (
                   <button
                     key={color}
-                    onClick={() => updateCanvasState({ brushColor: color })}
-                    className={`w-6 h-6 rounded border hover:scale-110 transition-transform ${
-                      canvasState.brushColor === color ? 'ring-2 ring-foreground ring-offset-1' : 'border-border'
+                    onClick={() => {
+                      console.log('Color clicked:', color);
+                      updateCanvasState({ brushColor: color });
+                    }}
+                    className={`w-8 h-8 rounded-lg border-2 hover:scale-105 transition-all duration-200 shadow-sm ${
+                      canvasState.brushColor === color ? 'ring-2 ring-foreground ring-offset-2' : 'border-border hover:border-foreground/20'
                     }`}
                     style={{ backgroundColor: color }}
                     title={color}
@@ -195,15 +201,15 @@ const ToolsSidebar: React.FC<ToolsSidebarProps> = ({ onAddShape, onClearCanvas, 
             </div>
 
             {/* Grey Scale */}
-            <div className="mb-4">
-              <label className="text-xs text-muted-foreground mb-2 block">Greyscale</label>
-              <div className="grid grid-cols-5 gap-1">
+            <div className="mb-6">
+              <label className="text-xs text-muted-foreground mb-3 block font-medium">Greyscale</label>
+              <div className="grid grid-cols-5 gap-2">
                 {greyScale.map((color) => (
                   <button
                     key={color}
                     onClick={() => updateCanvasState({ brushColor: color })}
-                    className={`w-6 h-6 rounded border hover:scale-110 transition-transform ${
-                      canvasState.brushColor === color ? 'ring-2 ring-foreground ring-offset-1' : 'border-border'
+                    className={`w-7 h-7 rounded-lg border-2 hover:scale-105 transition-all duration-200 shadow-sm ${
+                      canvasState.brushColor === color ? 'ring-2 ring-foreground ring-offset-2' : 'border-border hover:border-foreground/20'
                     }`}
                     style={{ backgroundColor: color }}
                     title={color}
@@ -213,15 +219,15 @@ const ToolsSidebar: React.FC<ToolsSidebarProps> = ({ onAddShape, onClearCanvas, 
             </div>
 
             {/* Warm Colors */}
-            <div className="mb-4">
-              <label className="text-xs text-muted-foreground mb-2 block">Warm</label>
-              <div className="grid grid-cols-5 gap-1">
+            <div className="mb-6">
+              <label className="text-xs text-muted-foreground mb-3 block font-medium">Warm</label>
+              <div className="grid grid-cols-5 gap-2">
                 {warmColors.map((color) => (
                   <button
                     key={color}
                     onClick={() => updateCanvasState({ brushColor: color })}
-                    className={`w-6 h-6 rounded border hover:scale-110 transition-transform ${
-                      canvasState.brushColor === color ? 'ring-2 ring-foreground ring-offset-1' : 'border-border'
+                    className={`w-7 h-7 rounded-lg border-2 hover:scale-105 transition-all duration-200 shadow-sm ${
+                      canvasState.brushColor === color ? 'ring-2 ring-foreground ring-offset-2' : 'border-border hover:border-foreground/20'
                     }`}
                     style={{ backgroundColor: color }}
                     title={color}
@@ -231,15 +237,15 @@ const ToolsSidebar: React.FC<ToolsSidebarProps> = ({ onAddShape, onClearCanvas, 
             </div>
 
             {/* Cool Colors */}
-            <div className="mb-4">
-              <label className="text-xs text-muted-foreground mb-2 block">Cool</label>
-              <div className="grid grid-cols-5 gap-1">
+            <div className="mb-6">
+              <label className="text-xs text-muted-foreground mb-3 block font-medium">Cool</label>
+              <div className="grid grid-cols-5 gap-2">
                 {coolColors.map((color) => (
                   <button
                     key={color}
                     onClick={() => updateCanvasState({ brushColor: color })}
-                    className={`w-6 h-6 rounded border hover:scale-110 transition-transform ${
-                      canvasState.brushColor === color ? 'ring-2 ring-foreground ring-offset-1' : 'border-border'
+                    className={`w-7 h-7 rounded-lg border-2 hover:scale-105 transition-all duration-200 shadow-sm ${
+                      canvasState.brushColor === color ? 'ring-2 ring-foreground ring-offset-2' : 'border-border hover:border-foreground/20'
                     }`}
                     style={{ backgroundColor: color }}
                     title={color}
