@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useAppStore } from '@/store/app';
 import FileExplorer from './FileExplorer';
+import LayerPanel from './LayerPanel';
+import PropertiesPanel from './PropertiesPanel';
 
 interface SidebarProps {
   side: 'left' | 'right';
