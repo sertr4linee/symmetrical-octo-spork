@@ -16,12 +16,28 @@ from models.database import init_db
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("starting api..")
+    """Gestionnaire de cycle de vie de l'application"""
+    # Phase de démarrage
+    print("🚀 Démarrage du serveur...")
     
-    await init_db()
-    print("db init")
+    # Initialisation de la base de données
+    try:
+        async with engine.begin() as conn:
+            # Créer les tables si elles n'existent pas
+            await conn.run_sync(Base.metadata.create_all)
+        print("✅ Base de données initialisée")
+    except Exception as e:
+        print(f"❌ Erreur lors de l'initialisation de la DB: {e}")
+        raise
     
-    print("shutting down api...")
+    print("✅ Serveur prêt!")
+    
+    # Yield control - this separates startup from shutdown
+    yield
+    
+    # Phase d'arrêt
+    print("🛑 Arrêt du serveur...")
+    print("✅ Nettoyage terminé")
 
 
 def create_app() -> FastAPI:
