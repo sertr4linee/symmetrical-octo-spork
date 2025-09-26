@@ -48,6 +48,8 @@ const Sidebar: React.FC<SidebarProps> = ({ side }) => {
         {/* Tab Content */}
         <div className="flex-1 overflow-hidden">
           {leftTab === 'tools' ? (
+            <PropertiesPanel />
+          ) : (
             <div className="p-4">
               <h3 className="text-sm font-medium text-muted-foreground mb-3">Tools</h3>
             
