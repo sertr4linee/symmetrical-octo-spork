@@ -90,8 +90,8 @@ const Canvas: React.FC = () => {
     if (canvasRef.current && !fabricCanvasRef.current) {
       // Initialize Fabric.js canvas
       const canvas = new fabric.Canvas(canvasRef.current, {
-        width: 800,
-        height: 600,
+        width: 600,
+        height: 400,
         backgroundColor: 'white',
         selection: true,
         preserveObjectStacking: true,
@@ -166,8 +166,24 @@ const Canvas: React.FC = () => {
   }, [canvasState.zoom, canvasState.pan]);
 
   return (
-    <div className="flex-1 flex items-center justify-center canvas-container overflow-hidden">
-      <div className="relative border border-border rounded-md shadow-lg bg-white">
+    <div 
+      className="flex-1 flex items-center justify-center canvas-container overflow-auto"
+      style={{ 
+        padding: '40px',
+        backgroundImage: `
+          linear-gradient(45deg, #f1f5f9 25%, transparent 25%),
+          linear-gradient(-45deg, #f1f5f9 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #f1f5f9 75%),
+          linear-gradient(-45deg, transparent 75%, #f1f5f9 75%)
+        `,
+        backgroundSize: '20px 20px',
+        backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px'
+      }}
+    >
+      <div className="relative border-2 border-border rounded-lg shadow-xl bg-white" style={{ 
+        minWidth: '600px',
+        minHeight: '400px'
+      }}>
         <canvas
           ref={canvasRef}
           className="block"
