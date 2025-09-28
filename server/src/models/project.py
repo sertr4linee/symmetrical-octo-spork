@@ -11,6 +11,7 @@ class ProjectBase(BaseModel):
     height: int = Field(..., gt=0, description="Hauteur du canvas en pixels")
     color_mode: str = Field(default="RGB", description="Mode colorimétrique (RGB, CMYK, etc.)")
     resolution: int = Field(default=300, gt=0, description="Résolution en DPI")
+    canvas_state: Optional[str] = Field(None, description="État sérialisé du canvas (JSON)")
 
 
 class ProjectCreate(ProjectBase):
@@ -24,6 +25,7 @@ class ProjectUpdate(BaseModel):
     height: Optional[int] = Field(None, gt=0)
     color_mode: Optional[str] = None
     resolution: Optional[int] = Field(None, gt=0)
+    canvas_state: Optional[str] = Field(None, description="État sérialisé du canvas (JSON)")
 
 
 class Project(ProjectBase):
@@ -32,6 +34,7 @@ class Project(ProjectBase):
     updated_at: datetime = Field(default_factory=datetime.utcnow, description="Date de dernière modification")
     image_count: int = Field(default=0, description="Nombre d'images dans le projet")
     file_size: int = Field(default=0, description="Taille totale du projet en bytes")
+    canvas_state: Optional[str] = Field(None, description="État sérialisé du canvas (JSON)")
     
     class Config:
         from_attributes = True

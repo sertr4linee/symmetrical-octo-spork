@@ -35,7 +35,8 @@ class ProjectService:
             width=project_data.width,
             height=project_data.height,
             color_mode=project_data.color_mode,
-            resolution=project_data.resolution
+            resolution=project_data.resolution,
+            canvas_state=project_data.canvas_state
         )
         
         self.db.add(db_project)
