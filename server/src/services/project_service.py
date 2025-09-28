@@ -171,7 +171,7 @@ class ProjectService:
             height=db_project.height,
             color_mode=db_project.color_mode,
             resolution=db_project.resolution,
-
+            canvas_state=db_project.canvas_state,
             created_at=db_project.created_at,
             updated_at=db_project.updated_at,
             image_count=db_project.image_count,
