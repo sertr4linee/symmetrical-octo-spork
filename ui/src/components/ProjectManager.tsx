@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppStore } from '@/store/app';
+import { useProjectService } from '@/services/projectService';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Project } from '@/types';
@@ -9,7 +10,10 @@ import {
   Trash2,
   Calendar,
   Layers,
-  X
+  X,
+  Save,
+  Download,
+  Upload
 } from 'lucide-react';
 
 interface ProjectManagerProps {
@@ -18,34 +22,112 @@ interface ProjectManagerProps {
 }
 
 const ProjectManager: React.FC<ProjectManagerProps> = ({ isOpen, onClose }) => {
-  const { projects, currentProject, setCurrentProject, addProject, removeProject } = useAppStore();
+  const { projects, currentProject, setCurrentProject, addProject, removeProject, setProjects, setLoading, canvas } = useAppStore();
   const [isCreating, setIsCreating] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
+  const [newProjectDescription, setNewProjectDescription] = useState('');
+  const [newProjectWidth, setNewProjectWidth] = useState(800);
+  const [newProjectHeight, setNewProjectHeight] = useState(600);
+  const projectService = useProjectService();
+
+  // Charger les projets au montage du composant
+  useEffect(() => {
+    if (isOpen) {
+      loadProjects();
+    }
+  }, [isOpen]);
+
+  const loadProjects = async () => {
+    try {
+      setLoading(true);
+      const projectsFromApi = await projectService.getAllProjects();
+      setProjects(projectsFromApi);
+    } catch (error) {
+      console.error('Error loading projects:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveCurrentProject = async () => {
+    if (!currentProject) return;
+    
+    try {
+      setLoading(true);
+      await projectService.saveProjectState(currentProject.id, canvas);
+      // Optionally show a success message
+    } catch (error) {
+      console.error('Error saving project:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!isOpen) return null;
 
-  const handleCreateProject = () => {
+    const handleCreateProject = async () => {
     if (!newProjectName.trim()) return;
 
-    const newProject: Project = {
-      id: `project_${Date.now()}`,
-      name: newProjectName.trim(),
-      description: 'New project',
-      width: 800,
-      height: 600,
-      color_mode: 'RGB',
-      resolution: 72,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      image_count: 0,
-      file_size: 0
-    };
+    try {
+      setLoading(true);
+      const projectData = {
+        name: newProjectName.trim(),
+        description: newProjectDescription || 'New project',
+        width: newProjectWidth,
+        height: newProjectHeight,
+        color_mode: 'RGB' as const,
+        resolution: 72
+      };
 
-    addProject(newProject);
-    setCurrentProject(newProject);
-    setNewProjectName('');
-    setIsCreating(false);
-    onClose();
+      const newProject = await projectService.createProject(projectData);
+      
+      if (newProject) {
+        addProject(newProject);
+        setCurrentProject(newProject);
+        setNewProjectName('');
+        setNewProjectDescription('');
+        setIsCreating(false);
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error creating project:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteProject = async (projectId: string) => {
+    if (window.confirm('Are you sure you want to delete this project?')) {
+      try {
+        setLoading(true);
+        const success = await projectService.deleteProject(projectId);
+        if (success) {
+          removeProject(projectId);
+          if (currentProject?.id === projectId) {
+            setCurrentProject(null);
+          }
+        }
+      } catch (error) {
+        console.error('Error deleting project:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleLoadProject = async (project: Project) => {
+    try {
+      setLoading(true);
+      const fullProject = await projectService.getProject(project.id);
+      if (fullProject) {
+        setCurrentProject(fullProject);
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error loading project:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatDate = (dateString: string) => {

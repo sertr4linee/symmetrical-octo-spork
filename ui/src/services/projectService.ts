@@ -4,9 +4,9 @@ import { Project } from '@/types';
 export const useProjectService = () => {
   const api = useElectronAPI();
 
-  async getAllProjects(): Promise<Project[]> {
+  const getAllProjects = async (): Promise<Project[]> => {
     try {
-      const result = await this.api.apiCall('/api/projects/');
+      const result = await api.apiCall('/api/projects/');
       if (result.success && result.data) {
         return result.data;
       }
@@ -15,11 +15,11 @@ export const useProjectService = () => {
       console.error('Error fetching projects:', error);
       return [];
     }
-  }
+  };
 
-  async getProject(projectId: string): Promise<Project | null> {
+  const getProject = async (projectId: string): Promise<Project | null> => {
     try {
-      const result = await this.api.apiCall(`/api/projects/${projectId}`);
+      const result = await api.apiCall(`/api/projects/${projectId}`);
       if (result.success && result.data) {
         return result.data;
       }
@@ -28,11 +28,11 @@ export const useProjectService = () => {
       console.error('Error fetching project:', error);
       return null;
     }
-  }
+  };
 
-  async createProject(projectData: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'image_count' | 'file_size'>): Promise<Project | null> {
+  const createProject = async (projectData: Omit<Project, 'id' | 'created_at' | 'updated_at' | 'image_count' | 'file_size'>): Promise<Project | null> => {
     try {
-      const result = await this.api.apiCall('/api/projects/', 'POST', projectData);
+      const result = await api.apiCall('/api/projects/', 'POST', projectData);
       if (result.success && result.data) {
         return result.data;
       }
@@ -41,11 +41,11 @@ export const useProjectService = () => {
       console.error('Error creating project:', error);
       return null;
     }
-  }
+  };
 
-  async updateProject(projectId: string, updates: Partial<Project>): Promise<Project | null> {
+  const updateProject = async (projectId: string, updates: Partial<Project>): Promise<Project | null> => {
     try {
-      const result = await this.api.apiCall(`/api/projects/${projectId}`, 'PUT', updates);
+      const result = await api.apiCall(`/api/projects/${projectId}`, 'PUT', updates);
       if (result.success && result.data) {
         return result.data;
       }
@@ -54,19 +54,19 @@ export const useProjectService = () => {
       console.error('Error updating project:', error);
       return null;
     }
-  }
+  };
 
-  async deleteProject(projectId: string): Promise<boolean> {
+  const deleteProject = async (projectId: string): Promise<boolean> => {
     try {
-      const result = await this.api.apiCall(`/api/projects/${projectId}`, 'DELETE');
+      const result = await api.apiCall(`/api/projects/${projectId}`, 'DELETE');
       return result.success;
     } catch (error) {
       console.error('Error deleting project:', error);
       return false;
     }
-  }
+  };
 
-  async saveProjectState(projectId: string, canvasState: any): Promise<boolean> {
+  const saveProjectState = async (projectId: string, canvasState: any): Promise<boolean> => {
     try {
       // Sauvegarder l'état du canvas avec les objets, layers, etc.
       const projectData = {
@@ -74,17 +74,17 @@ export const useProjectService = () => {
         updated_at: new Date().toISOString()
       };
 
-      const result = await this.api.apiCall(`/api/projects/${projectId}`, 'PUT', projectData);
+      const result = await api.apiCall(`/api/projects/${projectId}`, 'PUT', projectData);
       return result.success;
     } catch (error) {
       console.error('Error saving project state:', error);
       return false;
     }
-  }
+  };
 
-  async exportProject(projectId: string, format: 'json' | 'zip' = 'json'): Promise<string | null> {
+  const exportProject = async (projectId: string, format: 'json' | 'zip' = 'json'): Promise<string | null> => {
     try {
-      const result = await this.api.apiCall(`/api/projects/${projectId}/export?format=${format}`);
+      const result = await api.apiCall(`/api/projects/${projectId}/export?format=${format}`);
       if (result.success && result.data) {
         return result.data.export_data;
       }
@@ -93,11 +93,11 @@ export const useProjectService = () => {
       console.error('Error exporting project:', error);
       return null;
     }
-  }
+  };
 
-  async importProject(projectData: any): Promise<Project | null> {
+  const importProject = async (projectData: any): Promise<Project | null> => {
     try {
-      const result = await this.api.apiCall('/api/projects/import', 'POST', projectData);
+      const result = await api.apiCall('/api/projects/import', 'POST', projectData);
       if (result.success && result.data) {
         return result.data;
       }
@@ -106,8 +106,16 @@ export const useProjectService = () => {
       console.error('Error importing project:', error);
       return null;
     }
-  }
-}
+  };
 
-// Singleton instance
-export const projectService = new ProjectService();
+  return {
+    getAllProjects,
+    getProject,
+    createProject,
+    updateProject,
+    deleteProject,
+    saveProjectState,
+    exportProject,
+    importProject
+  };
+};
