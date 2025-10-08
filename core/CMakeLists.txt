@@ -88,6 +88,7 @@ set(CORE_SOURCES
     src/image/image_processor.cpp
     src/image/image_exporter.cpp
     src/image/image_importer.cpp
+    src/image/brush_engine.cpp
 )
 
 set(CORE_HEADERS
@@ -96,6 +97,7 @@ set(CORE_HEADERS
     include/bettergimp/image/image_processor.hpp
     include/bettergimp/image/image_exporter.hpp
     include/bettergimp/image/image_importer.hpp
+    include/bettergimp/image/brush_engine.hpp
 )
 
 # ====================================
