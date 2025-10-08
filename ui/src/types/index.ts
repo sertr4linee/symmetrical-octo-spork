@@ -93,6 +93,41 @@ export interface CanvasState {
   brushSize: number;
   brushOpacity: number;
   brushColor: string;
+  brushType: BrushType;
+  brushHardness: number;
+  brushSpacing: number;
+  brushAngle: number;
+}
+
+export enum BrushType {
+  ROUND = 'round',
+  SOFT_ROUND = 'soft_round',
+  HARD_ROUND = 'hard_round',
+  CALLIGRAPHY = 'calligraphy',
+  FLAT = 'flat',
+  SPRAY = 'spray',
+  STAMP = 'stamp',
+  PENCIL = 'pencil',
+  MARKER = 'marker',
+  WATERCOLOR = 'watercolor'
+}
+
+export interface BrushSettings {
+  type: BrushType;
+  size: number;
+  opacity: number;
+  hardness: number;
+  spacing: number;
+  angle: number;
+  roundness: number;
+  pressureOpacity: boolean;
+  pressureSize: boolean;
+  
+  // Type-specific settings
+  calligraphyAngle?: number;
+  calligraphyWidth?: number;
+  sprayDensity?: number;
+  sprayJitter?: number;
 }
 
 // Filter types
