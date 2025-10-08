@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useAppStore } from '@/store/app';
 import { useCanvasObjects, type CanvasObject } from '@/store/canvas';
 import DropZone from './DropZone';
+import { brushCacheManager } from '@/utils/brushCache';
 
 const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -125,21 +126,96 @@ const Canvas: React.FC = () => {
             if (obj.type === 'eraser') {
               ctx.globalCompositeOperation = 'destination-out';
               ctx.strokeStyle = 'rgba(0,0,0,1)';
+              ctx.lineWidth = canvasState.brushSize;
+              ctx.lineCap = 'round';
+              ctx.lineJoin = 'round';
+              ctx.beginPath();
+              ctx.moveTo(points[0].x, points[0].y);
+              points.forEach(point => {
+                ctx.lineTo(point.x, point.y);
+              });
+              ctx.stroke();
+              ctx.globalCompositeOperation = 'source-over';
             } else {
-              ctx.strokeStyle = obj.color;
+              const brushCanvas = brushCacheManager.getBrush(
+                canvasState.brushType,
+                canvasState.brushSize,
+                canvasState.brushHardness,
+                canvasState.brushAngle
+              );
+              
+              const spacing = canvasState.brushSpacing * canvasState.brushSize;
+              let lastDabX = points[0].x;
+              let lastDabY = points[0].y;
+              
+              ctx.save();
               ctx.globalAlpha = canvasState.brushOpacity;
+              ctx.globalCompositeOperation = 'source-over';
+              
+              const hexToRgb = (hex: string) => {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                  r: parseInt(result[1], 16),
+                  g: parseInt(result[2], 16),
+                  b: parseInt(result[3], 16)
+                } : { r: 0, g: 0, b: 0 };
+              };
+              
+              const color = hexToRgb(obj.color);
+              
+              const applyColoredBrush = (x: number, y: number) => {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = brushCanvas.width;
+                tempCanvas.height = brushCanvas.height;
+                const tempCtx = tempCanvas.getContext('2d')!;
+                
+                tempCtx.drawImage(brushCanvas, 0, 0);
+                
+                const imageData = tempCtx.getImageData(0, 0, brushCanvas.width, brushCanvas.height);
+                const data = imageData.data;
+                
+                for (let i = 0; i < data.length; i += 4) {
+                  const alpha = data[i + 3];
+                  data[i] = color.r;
+                  data[i + 1] = color.g;
+                  data[i + 2] = color.b;
+                  data[i + 3] = alpha;
+                }
+                
+                tempCtx.putImageData(imageData, 0, 0);
+                
+                ctx.drawImage(
+                  tempCanvas,
+                  x - brushCanvas.width / 2,
+                  y - brushCanvas.height / 2
+                );
+              };
+              
+              applyColoredBrush(points[0].x, points[0].y);
+              
+              for (let i = 1; i < points.length; i++) {
+                const dx = points[i].x - lastDabX;
+                const dy = points[i].y - lastDabY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance >= spacing) {
+                  const steps = Math.floor(distance / spacing);
+                  const stepX = dx / steps;
+                  const stepY = dy / steps;
+                  
+                  for (let s = 1; s <= steps; s++) {
+                    const dabX = lastDabX + stepX * s;
+                    const dabY = lastDabY + stepY * s;
+                    applyColoredBrush(dabX, dabY);
+                  }
+                  
+                  lastDabX += stepX * steps;
+                  lastDabY += stepY * steps;
+                }
+              }
+              
+              ctx.restore();
             }
-            ctx.lineWidth = obj.type === 'pencil' ? Math.max(1, canvasState.brushSize / 3) : canvasState.brushSize;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.beginPath();
-            ctx.moveTo(points[0].x, points[0].y);
-            points.forEach(point => {
-              ctx.lineTo(point.x, point.y);
-            });
-            ctx.stroke();
-            ctx.globalAlpha = 1;
-            ctx.globalCompositeOperation = 'source-over';
           }
           break;
 
@@ -197,7 +273,7 @@ const Canvas: React.FC = () => {
     });
 
     ctx.restore();
-  }, [objects, getContext, layers, selectedObjectId, canvasState.zoom, canvasState.pan, canvasState.brushSize]);
+  }, [objects, getContext, layers, selectedObjectId, canvasState.zoom, canvasState.pan, canvasState.brushSize, canvasState.brushType, canvasState.brushHardness, canvasState.brushAngle, canvasState.brushSpacing, canvasState.brushOpacity]);
 
   // Get object at position for selection - optimized and complete
   const getObjectAtPosition = useCallback((x: number, y: number) => {
