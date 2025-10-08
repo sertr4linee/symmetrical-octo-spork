@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useAppStore } from '@/store/app';
+import { useAutoSave } from '@/hooks/useAutoSave';
 import { isElectronAPIReady } from '@/utils';
 
 export const useMenuActions = () => {
@@ -10,6 +11,8 @@ export const useMenuActions = () => {
     redo,
     updateCanvasState,
   } = useAppStore();
+  
+  const { saveProjectManual } = useAutoSave();
 
   useEffect(() => {
     // Always set up the effect to maintain hook order consistency
@@ -41,6 +44,7 @@ export const useMenuActions = () => {
           
         case 'menu-save-project':
           // Handle project saving
+          saveProjectManual();
           addHistoryEntry({
             action: 'save-project',
             data: null,
