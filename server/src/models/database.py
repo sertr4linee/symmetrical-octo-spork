@@ -34,6 +34,7 @@ class ProjectDB(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     image_count = Column(Integer, default=0)
     file_size = Column(Integer, default=0)
+    canvas_state = Column(Text, nullable=True)  # JSON string du state du canvas
 
 
 class ImageDB(Base):
