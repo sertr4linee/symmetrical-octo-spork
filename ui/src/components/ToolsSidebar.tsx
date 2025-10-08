@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
 import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
+import BrushSelector from '@/components/BrushSelector';
 import { 
   MousePointer2,
   Brush, 
@@ -154,6 +155,16 @@ const ToolsSidebar: React.FC<ToolsSidebarProps> = ({ onAddShape, onClearCanvas, 
                 </div>
               )}
             </div>
+          </div>
+
+          <Separator className="bg-border flex-shrink-0" />
+          
+          {/* Brush Selector */}
+          <div className="flex-shrink-0">
+            <h3 className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">
+              Brush Type
+            </h3>
+            <BrushSelector />
           </div>
 
           <Separator className="bg-border flex-shrink-0" />

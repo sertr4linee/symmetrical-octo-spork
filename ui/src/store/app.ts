@@ -112,6 +112,10 @@ export const useAppStore = create<AppState>()(
         brushSize: 10,
         brushOpacity: 1,
         brushColor: '#000000',
+        brushType: 'round' as any, // BrushType.ROUND
+        brushHardness: 0.5,
+        brushSpacing: 0.25,
+        brushAngle: 0,
       },
       
       // Initialize with a background layer
