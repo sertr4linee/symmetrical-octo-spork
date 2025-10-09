@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useAppStore } from '@/store/app';
 import { useCanvasObjects, type CanvasObject } from '@/store/canvas';
 import DropZone from './DropZone';
+import { BrushType } from '@/types';
 
 const Canvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -138,26 +139,26 @@ const Canvas: React.FC = () => {
               const hardness = canvasState.brushHardness ?? 0.5;
               
               // Apply brush-specific styles
-              if (brushType === 'HARD_ROUND' || obj.type === 'pencil') {
+              if (brushType === BrushType.HARD_ROUND || obj.type === 'pencil') {
                 ctx.strokeStyle = obj.color;
                 ctx.lineWidth = canvasState.brushSize;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
                 ctx.shadowBlur = 0;
-              } else if (brushType === 'SOFT_ROUND') {
+              } else if (brushType === BrushType.SOFT_ROUND) {
                 ctx.strokeStyle = obj.color;
                 ctx.lineWidth = canvasState.brushSize;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
                 ctx.shadowBlur = canvasState.brushSize * 0.3;
                 ctx.shadowColor = obj.color;
-              } else if (brushType === 'MARKER') {
+              } else if (brushType === BrushType.MARKER) {
                 ctx.strokeStyle = obj.color;
                 ctx.lineWidth = canvasState.brushSize;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
                 ctx.globalAlpha = canvasState.brushOpacity * 0.6;
-              } else if (brushType === 'WATERCOLOR') {
+              } else if (brushType === BrushType.WATERCOLOR) {
                 ctx.strokeStyle = obj.color;
                 ctx.lineWidth = canvasState.brushSize * 1.2;
                 ctx.lineCap = 'round';
@@ -165,7 +166,7 @@ const Canvas: React.FC = () => {
                 ctx.shadowBlur = canvasState.brushSize * 0.5;
                 ctx.shadowColor = obj.color;
                 ctx.globalAlpha = canvasState.brushOpacity * 0.5;
-              } else if (brushType === 'SPRAY') {
+              } else if (brushType === BrushType.SPRAY) {
                 // Spray effect: draw random dots along the path
                 ctx.fillStyle = obj.color;
                 const density = 3;
@@ -186,7 +187,7 @@ const Canvas: React.FC = () => {
                 }
                 ctx.restore();
                 break;
-              } else if (brushType === 'CALLIGRAPHY') {
+              } else if (brushType === BrushType.CALLIGRAPHY) {
                 // Calligraphy: angled elliptical stroke
                 ctx.strokeStyle = obj.color;
                 ctx.lineWidth = canvasState.brushSize;
@@ -215,7 +216,7 @@ const Canvas: React.FC = () => {
                 }
                 ctx.restore();
                 break;
-              } else if (brushType === 'FLAT') {
+              } else if (brushType === BrushType.FLAT) {
                 // Flat brush: rectangular stroke
                 ctx.fillStyle = obj.color;
                 const angle = (canvasState.brushAngle || 0) * Math.PI / 180;
@@ -246,7 +247,7 @@ const Canvas: React.FC = () => {
             }
             
             // Draw the stroke for non-special brushes
-            if (!['SPRAY', 'CALLIGRAPHY', 'FLAT'].includes(canvasState.brushType)) {
+            if (![BrushType.SPRAY, BrushType.CALLIGRAPHY, BrushType.FLAT].includes(canvasState.brushType)) {
               ctx.beginPath();
               ctx.moveTo(points[0].x, points[0].y);
               
@@ -453,7 +454,12 @@ const Canvas: React.FC = () => {
         x: adjustedX,
         y: adjustedY,
         color: canvasState.tool === 'eraser' ? '#000000' : canvasState.brushColor,
-        points: [{ x: adjustedX, y: adjustedY }]
+        points: [{ x: adjustedX, y: adjustedY }],
+        brushType: canvasState.brushType,
+        brushSize: canvasState.brushSize,
+        brushOpacity: canvasState.brushOpacity,
+        brushHardness: canvasState.brushHardness,
+        brushAngle: canvasState.brushAngle
       };
 
       addObject(newStrokeObject);

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { BrushType } from '@/types';
 
 export interface CanvasObject {
   id: string;
@@ -15,6 +16,11 @@ export interface CanvasObject {
   points?: { x: number; y: number }[];
   imageId?: string;
   imageData?: string;
+  brushType?: BrushType;
+  brushSize?: number;
+  brushOpacity?: number;
+  brushHardness?: number;
+  brushAngle?: number;
 }
 
 interface CanvasObjectsState {
