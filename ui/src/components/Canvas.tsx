@@ -128,24 +128,135 @@ const Canvas: React.FC = () => {
               ctx.globalCompositeOperation = 'destination-out';
               ctx.strokeStyle = 'rgba(0,0,0,1)';
               ctx.lineWidth = canvasState.brushSize;
+              ctx.lineCap = 'round';
+              ctx.lineJoin = 'round';
             } else {
               ctx.globalCompositeOperation = 'source-over';
-              ctx.strokeStyle = obj.color;
-              ctx.lineWidth = canvasState.brushSize;
               ctx.globalAlpha = canvasState.brushOpacity;
+              
+              const brushType = canvasState.brushType;
+              const hardness = canvasState.brushHardness ?? 0.5;
+              
+              // Apply brush-specific styles
+              if (brushType === 'HARD_ROUND' || obj.type === 'pencil') {
+                ctx.strokeStyle = obj.color;
+                ctx.lineWidth = canvasState.brushSize;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.shadowBlur = 0;
+              } else if (brushType === 'SOFT_ROUND') {
+                ctx.strokeStyle = obj.color;
+                ctx.lineWidth = canvasState.brushSize;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.shadowBlur = canvasState.brushSize * 0.3;
+                ctx.shadowColor = obj.color;
+              } else if (brushType === 'MARKER') {
+                ctx.strokeStyle = obj.color;
+                ctx.lineWidth = canvasState.brushSize;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.globalAlpha = canvasState.brushOpacity * 0.6;
+              } else if (brushType === 'WATERCOLOR') {
+                ctx.strokeStyle = obj.color;
+                ctx.lineWidth = canvasState.brushSize * 1.2;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.shadowBlur = canvasState.brushSize * 0.5;
+                ctx.shadowColor = obj.color;
+                ctx.globalAlpha = canvasState.brushOpacity * 0.5;
+              } else if (brushType === 'SPRAY') {
+                // Spray effect: draw random dots along the path
+                ctx.fillStyle = obj.color;
+                const density = 3;
+                const radius = canvasState.brushSize / 2;
+                
+                for (let i = 0; i < points.length; i++) {
+                  for (let j = 0; j < density; j++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = Math.sqrt(Math.random()) * radius;
+                    const x = points[i].x + Math.cos(angle) * dist;
+                    const y = points[i].y + Math.sin(angle) * dist;
+                    const size = 0.5 + Math.random() * 1.5;
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                  }
+                }
+                ctx.restore();
+                break;
+              } else if (brushType === 'CALLIGRAPHY') {
+                // Calligraphy: angled elliptical stroke
+                ctx.strokeStyle = obj.color;
+                ctx.lineWidth = canvasState.brushSize;
+                ctx.lineCap = 'butt';
+                ctx.lineJoin = 'miter';
+                
+                // Apply rotation based on angle
+                const angle = (canvasState.brushAngle || 45) * Math.PI / 180;
+                
+                // Draw elliptical path
+                for (let i = 0; i < points.length - 1; i++) {
+                  const dx = points[i + 1].x - points[i].x;
+                  const dy = points[i + 1].y - points[i].y;
+                  const dist = Math.sqrt(dx * dx + dy * dy);
+                  
+                  if (dist > 0) {
+                    ctx.save();
+                    ctx.translate(points[i].x, points[i].y);
+                    ctx.rotate(angle);
+                    ctx.scale(1, 0.3);
+                    ctx.beginPath();
+                    ctx.arc(0, 0, canvasState.brushSize / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                  }
+                }
+                ctx.restore();
+                break;
+              } else if (brushType === 'FLAT') {
+                // Flat brush: rectangular stroke
+                ctx.fillStyle = obj.color;
+                const angle = (canvasState.brushAngle || 0) * Math.PI / 180;
+                const width = canvasState.brushSize * 0.3;
+                const length = canvasState.brushSize;
+                
+                for (let i = 0; i < points.length; i++) {
+                  ctx.save();
+                  ctx.translate(points[i].x, points[i].y);
+                  ctx.rotate(angle);
+                  ctx.fillRect(-width / 2, -length / 2, width, length);
+                  ctx.restore();
+                }
+                ctx.restore();
+                break;
+              } else {
+                // Default ROUND brush
+                ctx.strokeStyle = obj.color;
+                ctx.lineWidth = canvasState.brushSize;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                
+                if (hardness < 1.0) {
+                  ctx.shadowBlur = canvasState.brushSize * (1 - hardness) * 0.5;
+                  ctx.shadowColor = obj.color;
+                }
+              }
             }
             
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            
-            ctx.beginPath();
-            ctx.moveTo(points[0].x, points[0].y);
-            
-            for (let i = 1; i < points.length; i++) {
-              ctx.lineTo(points[i].x, points[i].y);
+            // Draw the stroke for non-special brushes
+            if (!['SPRAY', 'CALLIGRAPHY', 'FLAT'].includes(canvasState.brushType)) {
+              ctx.beginPath();
+              ctx.moveTo(points[0].x, points[0].y);
+              
+              for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+              }
+              
+              ctx.stroke();
             }
             
-            ctx.stroke();
             ctx.restore();
           }
           break;
