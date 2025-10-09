@@ -61,11 +61,12 @@ const ToolsSidebar: React.FC<ToolsSidebarProps> = ({ onAddShape, onClearCanvas, 
   ];
 
   return (
-    <div className="w-full h-full bg-background flex flex-col p-4 space-y-4 overflow-hidden">
+    <div className="w-full h-full bg-background flex flex-col overflow-hidden">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4">
       {/* New Project */}
       <Button 
         onClick={onNewProject}
-        className="w-full bg-foreground text-background hover:bg-foreground/90 h-9 flex-shrink-0"
+        className="w-full bg-foreground text-background hover:bg-foreground/90 h-10 flex-shrink-0"
       >
         <Plus className="w-4 h-4 mr-2" />
         New Project
@@ -80,7 +81,7 @@ const ToolsSidebar: React.FC<ToolsSidebarProps> = ({ onAddShape, onClearCanvas, 
           <Toggle
             pressed={canvasState.tool === 'select'}
             onPressedChange={() => setCurrentTool('select')}
-            className="data-[state=on]:bg-foreground data-[state=on]:text-background h-9 border border-border hover:bg-accent text-xs justify-start"
+            className="data-[state=on]:bg-foreground data-[state=on]:text-background h-10 border border-border hover:bg-accent text-xs justify-start px-3"
           >
             <MousePointer2 className="w-4 h-4 mr-1" />
             Select
@@ -89,7 +90,7 @@ const ToolsSidebar: React.FC<ToolsSidebarProps> = ({ onAddShape, onClearCanvas, 
           <Toggle
             pressed={canvasState.tool === 'brush'}
             onPressedChange={() => setCurrentTool('brush')}
-            className="data-[state=on]:bg-foreground data-[state=on]:text-background h-9 border border-border hover:bg-accent text-xs justify-start"
+            className="data-[state=on]:bg-foreground data-[state=on]:text-background h-10 border border-border hover:bg-accent text-xs justify-start px-3"
           >
             <Brush className="w-4 h-4 mr-1" />
             Brush
@@ -98,7 +99,7 @@ const ToolsSidebar: React.FC<ToolsSidebarProps> = ({ onAddShape, onClearCanvas, 
           <Toggle
             pressed={canvasState.tool === 'pencil'}
             onPressedChange={() => setCurrentTool('pencil')}
-            className="data-[state=on]:bg-foreground data-[state=on]:text-background h-9 border border-border hover:bg-accent text-xs justify-start"
+            className="data-[state=on]:bg-foreground data-[state=on]:text-background h-10 border border-border hover:bg-accent text-xs justify-start px-3"
           >
             <PenTool className="w-4 h-4 mr-1" />
             Pencil
@@ -107,7 +108,7 @@ const ToolsSidebar: React.FC<ToolsSidebarProps> = ({ onAddShape, onClearCanvas, 
           <Toggle
             pressed={canvasState.tool === 'eraser'}
             onPressedChange={() => setCurrentTool('eraser')}
-            className="data-[state=on]:bg-foreground data-[state=on]:text-background h-9 border border-border hover:bg-accent text-xs justify-start"
+            className="data-[state=on]:bg-foreground data-[state=on]:text-background h-10 border border-border hover:bg-accent text-xs justify-start px-3"
           >
             <Eraser className="w-4 h-4 mr-1" />
             Eraser
@@ -395,6 +396,7 @@ const ToolsSidebar: React.FC<ToolsSidebarProps> = ({ onAddShape, onClearCanvas, 
           Clear All
         </Button>
       </div>
+    </div>
     </div>
   );
 };

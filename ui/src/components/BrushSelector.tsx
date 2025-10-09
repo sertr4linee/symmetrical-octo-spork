@@ -114,21 +114,21 @@ const BrushSelector: React.FC<BrushSelectorProps> = ({ compact = false }) => {
             <ChevronDown className="w-4 h-4" />
           </Button>
           {isOpen && (
-            <div className="absolute top-full left-0 mt-1 w-full bg-background border border-border rounded-lg shadow-lg z-50 p-2">
+            <div className="absolute top-full left-0 mt-1 w-full bg-background border border-border rounded-lg shadow-lg z-50 p-2 max-h-80 overflow-y-auto">
               <div className="text-xs font-medium mb-2 text-muted-foreground">Select Brush</div>
-              <div className="grid grid-cols-2 gap-1">
+              <div className="grid grid-cols-2 gap-2">
                 {Object.values(BrushType).map((type) => (
                   <button
                     key={type}
                     onClick={() => handleBrushTypeChange(type)}
-                    className="flex flex-col items-center gap-1 py-3 rounded hover:bg-accent cursor-pointer"
+                    className="flex flex-col items-center justify-center gap-1.5 py-4 px-2 rounded hover:bg-accent cursor-pointer transition-colors"
                   >
                     <div className={`text-foreground ${currentBrushType === type ? 'scale-125' : ''} transition-transform`}>
                       {brushIcons[type]}
                     </div>
-                    <span className="text-xs">{brushNames[type]}</span>
+                    <span className="text-xs text-center leading-tight">{brushNames[type]}</span>
                     {currentBrushType === type && (
-                      <div className="w-1 h-1 rounded-full bg-foreground mt-1" />
+                      <div className="w-1 h-1 rounded-full bg-foreground" />
                     )}
                   </button>
                 ))}

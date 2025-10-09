@@ -2,17 +2,71 @@ import { BrushType } from '@/types';
 
 interface BrushCache {
   canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
+  imageData: ImageData;
   timestamp: number;
 }
 
 class BrushCacheManager {
   private cache: Map<string, BrushCache> = new Map();
   private maxCacheSize = 50;
-  private maxCacheAge = 60000; // 60 seconds
+  private maxCacheAge = 60000;
+  private coloredBrushCache: Map<string, HTMLCanvasElement> = new Map();
 
   private getCacheKey(type: BrushType, size: number, hardness: number, angle: number): string {
-    return `${type}_${size}_${hardness.toFixed(2)}_${angle.toFixed(0)}`;
+    return `${type}_${Math.round(size)}_${hardness.toFixed(2)}_${Math.round(angle)}`;
+  }
+
+  private getColoredCacheKey(type: BrushType, size: number, hardness: number, angle: number, color: string): string {
+    return `${this.getCacheKey(type, size, hardness, angle)}_${color}`;
+  }
+
+  getColoredBrush(type: BrushType, size: number, color: string, hardness: number = 0.5, angle: number = 0): HTMLCanvasElement {
+    const coloredKey = this.getColoredCacheKey(type, size, hardness, angle, color);
+    const cached = this.coloredBrushCache.get(coloredKey);
+    
+    if (cached) {
+      return cached;
+    }
+
+    const baseBrush = this.getBrush(type, size, hardness, angle);
+    const coloredCanvas = document.createElement('canvas');
+    coloredCanvas.width = baseBrush.width;
+    coloredCanvas.height = baseBrush.height;
+    const ctx = coloredCanvas.getContext('2d', { willReadFrequently: true })!;
+    
+    ctx.drawImage(baseBrush, 0, 0);
+    
+    const imageData = ctx.getImageData(0, 0, coloredCanvas.width, coloredCanvas.height);
+    const data = imageData.data;
+    
+    const hexToRgb = (hex: string) => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      } : { r: 0, g: 0, b: 0 };
+    };
+    
+    const rgb = hexToRgb(color);
+    
+    for (let i = 0; i < data.length; i += 4) {
+      const alpha = data[i + 3];
+      data[i] = rgb.r;
+      data[i + 1] = rgb.g;
+      data[i + 2] = rgb.b;
+      data[i + 3] = alpha;
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+    
+    if (this.coloredBrushCache.size >= this.maxCacheSize * 2) {
+      const firstKey = this.coloredBrushCache.keys().next().value;
+      if (firstKey) this.coloredBrushCache.delete(firstKey);
+    }
+    
+    this.coloredBrushCache.set(coloredKey, coloredCanvas);
+    return coloredCanvas;
   }
 
   getBrush(type: BrushType, size: number, hardness: number = 0.5, angle: number = 0): HTMLCanvasElement {
@@ -23,20 +77,20 @@ class BrushCacheManager {
       return cached.canvas;
     }
 
-    // Generate new brush
     const brush = this.generateBrush(type, size, hardness, angle);
     
-    // Clean old cache entries if needed
     if (this.cache.size >= this.maxCacheSize) {
       const oldestKey = Array.from(this.cache.entries())
         .sort((a, b) => a[1].timestamp - b[1].timestamp)[0][0];
       this.cache.delete(oldestKey);
     }
 
-    // Cache the new brush
+    const ctx = brush.getContext('2d', { willReadFrequently: true })!;
+    const imageData = ctx.getImageData(0, 0, brush.width, brush.height);
+    
     this.cache.set(key, {
       canvas: brush,
-      ctx: brush.getContext('2d')!,
+      imageData,
       timestamp: Date.now()
     });
 
