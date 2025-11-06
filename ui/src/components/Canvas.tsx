@@ -127,9 +127,11 @@ const Canvas: React.FC = () => {
               ctx.strokeStyle = 'rgba(0,0,0,1)';
             } else {
               ctx.strokeStyle = obj.color;
-              ctx.globalAlpha = canvasState.brushOpacity;
+              // Use the object's stored opacity instead of current canvasState.brushOpacity
+              ctx.globalAlpha = obj.opacity !== undefined ? obj.opacity : canvasState.brushOpacity;
             }
-            ctx.lineWidth = obj.type === 'pencil' ? Math.max(1, canvasState.brushSize / 3) : canvasState.brushSize;
+            // Use the object's stored strokeWidth instead of current canvasState.brushSize
+            ctx.lineWidth = obj.strokeWidth || (obj.type === 'pencil' ? Math.max(1, canvasState.brushSize / 3) : canvasState.brushSize);
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             ctx.beginPath();
@@ -335,6 +337,8 @@ const Canvas: React.FC = () => {
         x: adjustedX,
         y: adjustedY,
         color: canvasState.tool === 'eraser' ? '#000000' : canvasState.brushColor,
+        strokeWidth: canvasState.tool === 'pencil' ? Math.max(1, canvasState.brushSize / 3) : canvasState.brushSize,
+        opacity: canvasState.tool === 'eraser' ? 1 : canvasState.brushOpacity,
         points: [{ x: adjustedX, y: adjustedY }]
       };
 

@@ -12,6 +12,7 @@ export interface CanvasObject {
   color: string;
   strokeColor?: string;
   strokeWidth?: number;
+  opacity?: number;
   points?: { x: number; y: number }[];
   imageId?: string;
   imageData?: string;
