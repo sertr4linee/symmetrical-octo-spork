@@ -1,5 +1,7 @@
 import React from 'react';
 import { useMenuActions } from '@/hooks/useMenuActions';
+import { useTheme } from '@/hooks/useTheme';
+import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts';
 import { useAppStore } from '@/store/app';
 import Canvas from '@/components/Canvas';
 import Sidebar from '@/components/Sidebar';
@@ -12,19 +14,25 @@ import ErrorMessage from '@/components/ErrorMessage';
 import ElectronWrapper from '@/components/ElectronWrapper';
 import ResizablePanel from '@/components/ResizablePanel';
 import EditDropdown from '@/components/EditDropdown';
+import Settings from '@/components/Settings';
 
 const AppContent: React.FC = () => {
-  useMenuActions();
-  
   const { isLoading, error, panels, createShape, clearCanvas } = useAppStore();
   const [isProjectManagerOpen, setIsProjectManagerOpen] = React.useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
+  
+  useMenuActions();
+  useTheme(); // Initialize theme system
+  useGlobalShortcuts({
+    onOpenSettings: () => setIsSettingsOpen(true),
+  });
 
   if (isLoading) {
     return <LoadingScreen />;
   }
 
   return (
-    <div className="dark h-screen w-screen flex flex-col overflow-hidden bg-background text-foreground">
+    <div className="h-screen w-screen flex flex-col overflow-hidden bg-background text-foreground">
       {error && <ErrorMessage message={error} />}
       
       <div className="h-10 border-b border-border bg-background flex items-center px-4 flex-shrink-0">
@@ -43,6 +51,12 @@ const AppContent: React.FC = () => {
             <span className="hover:text-foreground cursor-pointer">Layer</span>
             <span className="hover:text-foreground cursor-pointer">Filters</span>
             <span className="hover:text-foreground cursor-pointer">Help</span>
+            <span 
+              className="hover:text-foreground cursor-pointer"
+              onClick={() => setIsSettingsOpen(true)}
+            >
+              Settings
+            </span>
           </div>
         </div>
       </div>
@@ -80,6 +94,12 @@ const AppContent: React.FC = () => {
       <ProjectManager 
         isOpen={isProjectManagerOpen}
         onClose={() => setIsProjectManagerOpen(false)}
+      />
+      
+      {/* Settings Modal */}
+      <Settings 
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
       />
     </div>
   );

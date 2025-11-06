@@ -143,3 +143,32 @@ export interface Theme {
   name: string;
   colors: Record<string, string>;
 }
+
+// Settings and Preferences types
+export interface UserPreferences {
+  theme: 'light' | 'dark' | 'system';
+  language: string;
+  autoSave: boolean;
+  autoSaveInterval: number; // minutes
+  performance: {
+    highQualityPreview: boolean;
+    hardwareAcceleration: boolean;
+    memoryLimit: number; // MB
+    maxUndoSteps: number;
+  };
+  interface: {
+    showWelcomeScreen: boolean;
+    toolbarSize: 'small' | 'medium' | 'large';
+    showTooltips: boolean;
+    enableAnimations: boolean;
+  };
+  shortcuts: Record<string, string>;
+}
+
+export interface RecentFile {
+  id: string;
+  path: string;
+  name: string;
+  lastOpened: string;
+  thumbnail?: string;
+}

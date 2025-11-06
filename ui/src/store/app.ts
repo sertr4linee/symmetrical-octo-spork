@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { Project, CanvasState, PanelState, HistoryEntry, Layer } from '@/types';
+import { Project, CanvasState, PanelState, HistoryEntry, Layer, UserPreferences, RecentFile } from '@/types';
 
 interface AppState {
   // Current project
@@ -24,6 +24,10 @@ interface AppState {
   history: HistoryEntry[];
   historyIndex: number;
   
+  // User preferences
+  preferences: UserPreferences;
+  recentFiles: RecentFile[];
+  
   // Actions
   setCurrentProject: (project: Project | null) => void;
   setProjects: (projects: Project[]) => void;
@@ -42,6 +46,12 @@ interface AppState {
   undo: () => void;
   redo: () => void;
   resetHistory: () => void;
+  
+  // Preferences actions
+  updatePreferences: (updates: Partial<UserPreferences>) => void;
+  addRecentFile: (file: RecentFile) => void;
+  removeRecentFile: (fileId: string) => void;
+  clearRecentFiles: () => void;
   
   // Layer actions
   addLayer: (layer: Layer) => void;
@@ -139,6 +149,42 @@ export const useAppStore = create<AppState>()(
       
       history: [],
       historyIndex: -1,
+      
+      // Default preferences
+      preferences: {
+        theme: 'system' as const,
+        language: 'en',
+        autoSave: true,
+        autoSaveInterval: 5,
+        performance: {
+          highQualityPreview: true,
+          hardwareAcceleration: true,
+          memoryLimit: 2048,
+          maxUndoSteps: 50,
+        },
+        interface: {
+          showWelcomeScreen: true,
+          toolbarSize: 'medium' as const,
+          showTooltips: true,
+          enableAnimations: true,
+        },
+        shortcuts: {
+          'new-project': 'Ctrl+N',
+          'open-project': 'Ctrl+O',
+          'save-project': 'Ctrl+S',
+          'undo': 'Ctrl+Z',
+          'redo': 'Ctrl+Y',
+          'zoom-in': 'Ctrl++',
+          'zoom-out': 'Ctrl+-',
+          'zoom-fit': 'Ctrl+0',
+          'brush-tool': 'B',
+          'select-tool': 'V',
+          'pencil-tool': 'P',
+          'eraser-tool': 'E',
+        },
+      },
+      
+      recentFiles: [],
       
       // Actions
       setCurrentProject: (project) => set({ currentProject: project }),
@@ -333,7 +379,29 @@ export const useAppStore = create<AppState>()(
       clearShapeLayers: () =>
         set((state) => ({
           layers: state.layers.filter(layer => layer.type !== 'shape')
-        }))
+        })),
+      
+      // Preferences actions
+      updatePreferences: (updates: Partial<UserPreferences>) =>
+        set((state) => ({
+          preferences: { ...state.preferences, ...updates }
+        })),
+      
+      addRecentFile: (file: RecentFile) =>
+        set((state) => {
+          const filtered = state.recentFiles.filter(f => f.id !== file.id);
+          return {
+            recentFiles: [file, ...filtered].slice(0, 10) // Limit to 10 recent files
+          };
+        }),
+      
+      removeRecentFile: (fileId: string) =>
+        set((state) => ({
+          recentFiles: state.recentFiles.filter(f => f.id !== fileId)
+        })),
+      
+      clearRecentFiles: () =>
+        set({ recentFiles: [] })
     }),
     {
       name: 'bettergimp-store',
