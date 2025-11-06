@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useAppStore } from '@/store/app';
+import { useAutoSave } from '@/hooks/useAutoSave';
+import { useProjectService } from '@/services/projectService';
 import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
 import { Slider } from '@/components/ui/slider';
@@ -18,8 +20,14 @@ import {
   ZoomIn,
   ZoomOut,
   RotateCcw,
-  Plus,
-  ChevronDown
+  ChevronDown,
+  FileText,
+  Save,
+  Undo,
+  Redo,
+  FolderOpen,
+  Download,
+  Image
 } from 'lucide-react';
 
 interface ToolsSidebarProps {
@@ -33,10 +41,18 @@ const ToolsSidebar: React.FC<ToolsSidebarProps> = ({ onAddShape, onClearCanvas, 
   
   const { 
     canvas: canvasState, 
+    currentProject,
     setCurrentTool,
     setZoom,
-    updateCanvasState
+    updateCanvasState,
+    undo,
+    redo,
+    history,
+    historyIndex
   } = useAppStore();
+  
+  const { saveProjectManual, canSave } = useAutoSave();
+  const projectService = useProjectService();
 
   // Organized color palettes
   const primaryColors = [
@@ -61,14 +77,150 @@ const ToolsSidebar: React.FC<ToolsSidebarProps> = ({ onAddShape, onClearCanvas, 
 
   return (
     <div className="w-full h-full bg-background flex flex-col p-4 space-y-4 overflow-hidden">
-      {/* New Project */}
-      <Button 
-        onClick={onNewProject}
-        className="w-full bg-foreground text-background hover:bg-foreground/90 h-9 flex-shrink-0"
-      >
-        <Plus className="w-4 h-4 mr-2" />
-        New Project
-      </Button>
+      {/* Main Actions */}
+      <div className="flex-shrink-0">
+        <h3 className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Actions</h3>
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <Button 
+            onClick={onNewProject}
+            variant="outline"
+            size="sm"
+            className="h-9 text-xs justify-start"
+            title="New Project (Ctrl+N)"
+          >
+            <FileText className="w-4 h-4 mr-1" />
+            New
+          </Button>
+          <Button 
+            onClick={() => {
+              // Trigger project manager to open
+              const event = new CustomEvent('openProjectManager');
+              window.dispatchEvent(event);
+            }}
+            variant="outline"
+            size="sm"
+            className="h-9 text-xs justify-start"
+            title="Open Project (Ctrl+O)"
+          >
+            <FolderOpen className="w-4 h-4 mr-1" />
+            Open
+          </Button>
+        </div>
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <Button 
+            onClick={async () => {
+              const success = await saveProjectManual();
+              if (success) {
+                console.log('Project saved successfully');
+              }
+            }}
+            variant="outline"
+            size="sm"
+            className="h-9 text-xs justify-start"
+            disabled={!canSave || !currentProject}
+            title="Save Project (Ctrl+S)"
+          >
+            <Save className="w-4 h-4 mr-1" />
+            Save
+          </Button>
+          <Button 
+            onClick={() => {
+              onClearCanvas();
+              console.log('Canvas cleared');
+            }}
+            variant="outline"
+            size="sm"
+            className="h-9 text-xs justify-start text-destructive hover:text-destructive"
+            title="Clear Canvas"
+          >
+            <Trash2 className="w-4 h-4 mr-1" />
+            Clear
+          </Button>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <Button 
+            onClick={() => {
+              undo();
+              console.log('Undo action');
+            }}
+            variant="outline"
+            size="sm"
+            className="h-9 text-xs justify-start"
+            disabled={historyIndex <= 0}
+            title={`Undo (Ctrl+Z) - ${historyIndex > 0 ? history[historyIndex].action : 'Nothing to undo'}`}
+          >
+            <Undo className="w-4 h-4 mr-1" />
+            Undo
+          </Button>
+          <Button 
+            onClick={() => {
+              redo();
+              console.log('Redo action');
+            }}
+            variant="outline"
+            size="sm"
+            className="h-9 text-xs justify-start"
+            disabled={historyIndex >= history.length - 1}
+            title={`Redo (Ctrl+Y) - ${historyIndex < history.length - 1 ? history[historyIndex + 1].action : 'Nothing to redo'}`}
+          >
+            <Redo className="w-4 h-4 mr-1" />
+            Redo
+          </Button>
+        </div>
+        
+        {/* Export Options */}
+        <div className="grid grid-cols-2 gap-2 mt-3">
+          <Button 
+            onClick={async () => {
+              const canvas = document.querySelector('canvas');
+              if (canvas) {
+                try {
+                  await projectService.exportCanvasAsImage(canvas, 'png');
+                  console.log('Canvas exported as PNG');
+                } catch (error) {
+                  console.error('Error exporting as PNG:', error);
+                }
+              }
+            }}
+            variant="outline"
+            size="sm"
+            className="h-9 text-xs justify-start"
+            disabled={!currentProject}
+            title="Export as PNG"
+          >
+            <Image className="w-4 h-4 mr-1" />
+            PNG
+          </Button>
+          <Button 
+            onClick={async () => {
+              const canvas = document.querySelector('canvas');
+              if (canvas) {
+                try {
+                  await projectService.exportCanvasAsImage(canvas, 'jpeg', 0.9);
+                  console.log('Canvas exported as JPEG');
+                } catch (error) {
+                  console.error('Error exporting as JPEG:', error);
+                }
+              }
+            }}
+            variant="outline"
+            size="sm"
+            className="h-9 text-xs justify-start"
+            disabled={!currentProject}
+            title="Export as JPEG"
+          >
+            <Download className="w-4 h-4 mr-1" />
+            JPEG
+          </Button>
+        </div>
+        
+        {/* History Info */}
+        {history.length > 0 && (
+          <div className="mt-2 text-xs text-muted-foreground text-center">
+            {historyIndex + 1} / {history.length} actions
+          </div>
+        )}
+      </div>
 
       <Separator className="bg-border flex-shrink-0" />
 

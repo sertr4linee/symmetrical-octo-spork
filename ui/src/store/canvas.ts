@@ -28,6 +28,7 @@ interface CanvasObjectsState {
   updateObject: (id: string, updates: Partial<CanvasObject>) => void;
   setSelectedObject: (id: string | null) => void;
   clearObjects: () => void;
+  restoreObjects: (objects: CanvasObject[]) => void;
 }
 
 export const useCanvasObjects = create<CanvasObjectsState>((set) => ({
@@ -56,5 +57,8 @@ export const useCanvasObjects = create<CanvasObjectsState>((set) => ({
     set({ selectedObjectId: id }),
     
   clearObjects: () =>
-    set({ objects: [], selectedObjectId: null })
+    set({ objects: [], selectedObjectId: null }),
+    
+  restoreObjects: (objects: CanvasObject[]) =>
+    set({ objects, selectedObjectId: null })
 }));

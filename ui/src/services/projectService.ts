@@ -66,15 +66,21 @@ export const useProjectService = () => {
     }
   };
 
-  const saveProjectState = async (projectId: string, canvasState: any): Promise<boolean> => {
+  const saveProjectState = async (projectId: string, canvasState: any, objects: any[], layers: any[]): Promise<boolean> => {
     try {
-      // Sauvegarder l'état du canvas avec les objets, layers, etc.
+      // Sauvegarder l'état complet du projet
       const projectData = {
-        canvas_state: JSON.stringify(canvasState),
+        canvas_state: JSON.stringify({
+          canvasState,
+          objects,
+          layers,
+          savedAt: new Date().toISOString()
+        }),
         updated_at: new Date().toISOString()
       };
 
       const result = await api.apiCall(`/api/projects/${projectId}`, 'PUT', projectData);
+      console.log('Project saved:', result.success);
       return result.success;
     } catch (error) {
       console.error('Error saving project state:', error);
@@ -91,6 +97,40 @@ export const useProjectService = () => {
       return null;
     } catch (error) {
       console.error('Error exporting project:', error);
+      return null;
+    }
+  };
+
+  const exportCanvasAsImage = async (canvas: HTMLCanvasElement, format: 'png' | 'jpeg' = 'png', quality: number = 0.9): Promise<void> => {
+    try {
+      const dataURL = canvas.toDataURL(`image/${format}`, quality);
+      
+      // Créer un lien de téléchargement
+      const link = document.createElement('a');
+      link.download = `canvas-export.${format}`;
+      link.href = dataURL;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error exporting canvas as image:', error);
+      throw error;
+    }
+  };
+
+  const loadProjectState = async (project: Project): Promise<{canvasState: any, objects: any[], layers: any[]} | null> => {
+    try {
+      if (project.canvas_state) {
+        const state = JSON.parse(project.canvas_state);
+        return {
+          canvasState: state.canvasState || {},
+          objects: state.objects || [],
+          layers: state.layers || []
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error loading project state:', error);
       return null;
     }
   };
@@ -115,7 +155,9 @@ export const useProjectService = () => {
     updateProject,
     deleteProject,
     saveProjectState,
+    loadProjectState,
     exportProject,
-    importProject
+    importProject,
+    exportCanvasAsImage
   };
 };

@@ -47,7 +47,7 @@ export interface Project {
   updated_at: string;
   image_count: number;
   file_size: number;
-
+  canvas_state?: string;
 }
 
 // Layer types
@@ -129,6 +129,16 @@ export interface HistoryEntry {
   action: string;
   timestamp: number;
   data: any;
+  previousState?: {
+    canvas?: Partial<CanvasState>;
+    objects?: any[];
+    layers?: Layer[];
+  };
+  newState?: {
+    canvas?: Partial<CanvasState>;
+    objects?: any[];
+    layers?: Layer[];
+  };
 }
 
 // UI types

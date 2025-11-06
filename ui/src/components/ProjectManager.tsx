@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppStore } from '@/store/app';
+import { useCanvasObjects } from '@/store/canvas';
 import { useProjectService } from '@/services/projectService';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,29 +21,55 @@ interface ProjectManagerProps {
 }
 
 const ProjectManager: React.FC<ProjectManagerProps> = ({ isOpen, onClose }) => {
-  const { projects, currentProject, setCurrentProject, addProject, removeProject, setProjects, setLoading, canvas } = useAppStore();
+  const { 
+    projects, 
+    currentProject, 
+    setCurrentProject, 
+    addProject, 
+    removeProject, 
+    setProjects, 
+    setLoading, 
+    canvas,
+    layers,
+    hasLoadedProjects,
+    setHasLoadedProjects,
+    restoreProjectState 
+  } = useAppStore();
+  const { objects, restoreObjects } = useCanvasObjects();
   const [isCreating, setIsCreating] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectDescription, setNewProjectDescription] = useState('');
   const [newProjectWidth, setNewProjectWidth] = useState(800);
   const [newProjectHeight, setNewProjectHeight] = useState(600);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   const projectService = useProjectService();
 
-  // Charger les projets au montage du composant
+  // Charger les projets au montage du composant - seulement si on n'a pas déjà chargé
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !hasLoadedProjects && !isLoadingProjects) {
+      console.log('ProjectManager: Loading projects for first time');
+      setHasLoadedProjects(true);
       loadProjects();
     }
-  }, [isOpen]);
+  }, [isOpen, hasLoadedProjects, isLoadingProjects]);
 
   const loadProjects = async () => {
+    if (isLoadingProjects) {
+      console.log('Projects already loading, skipping...');
+      return;
+    }
+    
     try {
+      setIsLoadingProjects(true);
       setLoading(true);
+      console.log('Loading projects from API...');
       const projectsFromApi = await projectService.getAllProjects();
+      console.log('Projects loaded:', projectsFromApi.length);
       setProjects(projectsFromApi);
     } catch (error) {
       console.error('Error loading projects:', error);
     } finally {
+      setIsLoadingProjects(false);
       setLoading(false);
     }
   };
@@ -52,8 +79,14 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({ isOpen, onClose }) => {
     
     try {
       setLoading(true);
-      await projectService.saveProjectState(currentProject.id, canvas);
-      // Optionally show a success message
+      const success = await projectService.saveProjectState(currentProject.id, canvas, objects, layers);
+      if (success) {
+        console.log('Project saved successfully');
+        // TODO: Show success notification
+      } else {
+        console.error('Failed to save project');
+        // TODO: Show error notification
+      }
     } catch (error) {
       console.error('Error saving project:', error);
     } finally {
@@ -82,6 +115,14 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({ isOpen, onClose }) => {
       if (newProject) {
         addProject(newProject);
         setCurrentProject(newProject);
+        
+        // Nettoyer le canvas pour le nouveau projet
+        restoreObjects([]);
+        restoreProjectState({}, []);
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('canvasRedraw'));
+        }, 100);
+        
         setNewProjectName('');
         setNewProjectDescription('');
         setIsCreating(false);
@@ -119,6 +160,45 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({ isOpen, onClose }) => {
       const fullProject = await projectService.getProject(project.id);
       if (fullProject) {
         setCurrentProject(fullProject);
+        
+        // Charger l'état du canvas si disponible
+        const projectState = await projectService.loadProjectState(fullProject);
+        console.log('Loading project:', fullProject.name, 'ID:', fullProject.id);
+        console.log('Project has canvas_state:', !!fullProject.canvas_state);
+        console.log('Loaded project state:', projectState);
+        
+        if (projectState) {
+          console.log('Restoring state...');
+          console.log('- Canvas state:', projectState.canvasState);
+          console.log('- Objects count:', projectState.objects?.length || 0);
+          console.log('- Layers count:', projectState.layers?.length || 0);
+          
+          // Restaurer l'état du canvas
+          if (projectState.canvasState) {
+            restoreProjectState(projectState.canvasState, projectState.layers || []);
+          }
+          
+          // Restaurer les objets dessinés
+          if (projectState.objects && projectState.objects.length > 0) {
+            console.log('Restoring', projectState.objects.length, 'objects');
+            restoreObjects(projectState.objects);
+          } else {
+            console.log('No objects to restore, clearing canvas');
+            restoreObjects([]);
+          }
+          
+          // Redessiner le canvas après un court délai pour s'assurer que tout est chargé
+          setTimeout(() => {
+            console.log('Triggering canvas redraw');
+            window.dispatchEvent(new CustomEvent('canvasRedraw'));
+          }, 100);
+        } else {
+          console.log('No saved state found, clearing canvas');
+          // Si pas d'état sauvegardé, nettoyer le canvas
+          restoreObjects([]);
+          restoreProjectState({}, []);
+        }
+        
         onClose();
       }
     } catch (error) {

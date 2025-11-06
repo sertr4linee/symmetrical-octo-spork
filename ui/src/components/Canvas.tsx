@@ -18,7 +18,8 @@ const Canvas: React.FC = () => {
     currentProject,
     layers,
     addLayer,
-    setActiveLayer
+    setActiveLayer,
+    addHistoryEntry
   } = useAppStore();
 
   // Get canvas context
@@ -344,6 +345,16 @@ const Canvas: React.FC = () => {
 
       addObject(newStrokeObject);
       
+      // Add to history
+      addHistoryEntry({
+        action: `${toolName.toLowerCase()}-stroke`,
+        data: {
+          objectId: newStrokeObject.id,
+          type: newStrokeObject.type,
+          position: { x: adjustedX, y: adjustedY }
+        }
+      });
+      
       // Only add layer for brush and pencil, not for eraser
       if (canvasState.tool !== 'eraser') {
         addLayer({
@@ -435,10 +446,31 @@ const Canvas: React.FC = () => {
       };
 
       addObject(newShape);
+      
+      // Add to history
+      addHistoryEntry({
+        action: `create-${shapeType}`,
+        data: {
+          objectId: layerId,
+          type: shapeType,
+          position: { x: newShape.x, y: newShape.y },
+          size: { width: newShape.width, height: newShape.height }
+        }
+      });
     };
 
     const handleClearCanvas = () => {
+      const objectsCleared = objects.length;
       clearObjects();
+      
+      // Add to history
+      addHistoryEntry({
+        action: 'clear-canvas',
+        data: {
+          objectsCleared,
+          timestamp: Date.now()
+        }
+      });
     };
 
     const handleAddImage = (event: CustomEvent) => {
@@ -464,7 +496,7 @@ const Canvas: React.FC = () => {
       window.removeEventListener('canvasClear', handleClearCanvas);
       window.removeEventListener('canvasAddImage', handleAddImage as EventListener);
     };
-  }, [currentProject, objects.length, addObject, clearObjects]);
+  }, [currentProject, objects.length, addObject, clearObjects, addHistoryEntry, addLayer, objects]);
 
   // Initialize canvas
   useEffect(() => {
@@ -481,6 +513,30 @@ const Canvas: React.FC = () => {
   useEffect(() => {
     redrawCanvas();
   }, [objects, redrawCanvas]);
+
+  // Handle undo/redo events
+  useEffect(() => {
+    const handleUndoRedo = (event: CustomEvent) => {
+      console.log('Canvas received undo/redo event:', event.detail);
+      // Pour l'instant, on redessine juste le canvas
+      // L'implémentation complète restaurera l'état des objets
+      redrawCanvas();
+    };
+
+    window.addEventListener('undoRedo', handleUndoRedo as EventListener);
+    return () => window.removeEventListener('undoRedo', handleUndoRedo as EventListener);
+  }, [redrawCanvas]);
+
+  // Listen for canvas redraw events (from project loading)
+  useEffect(() => {
+    const handleCanvasRedraw = () => {
+      console.log('Canvas redraw requested');
+      redrawCanvas();
+    };
+
+    window.addEventListener('canvasRedraw', handleCanvasRedraw);
+    return () => window.removeEventListener('canvasRedraw', handleCanvasRedraw);
+  }, [redrawCanvas]);
 
   return (
     <DropZone>

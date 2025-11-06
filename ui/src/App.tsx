@@ -27,6 +27,16 @@ const AppContent: React.FC = () => {
     onOpenSettings: () => setIsSettingsOpen(true),
   });
 
+  // Listen for custom events to open project manager
+  React.useEffect(() => {
+    const handleOpenProjectManager = () => {
+      setIsProjectManagerOpen(true);
+    };
+
+    window.addEventListener('openProjectManager', handleOpenProjectManager);
+    return () => window.removeEventListener('openProjectManager', handleOpenProjectManager);
+  }, []);
+
   if (isLoading) {
     return <LoadingScreen />;
   }

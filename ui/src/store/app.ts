@@ -43,6 +43,8 @@ interface AppState {
   setError: (error: string | null) => void;
   setHasLoadedProjects: (loaded: boolean) => void;
   addHistoryEntry: (entry: Omit<HistoryEntry, 'id' | 'timestamp'>) => void;
+  addHistoryEntryWithState: (action: string, data?: any) => void;
+  restoreProjectState: (canvasState: any, layers: Layer[]) => void;
   undo: () => void;
   redo: () => void;
   resetHistory: () => void;
@@ -71,34 +73,9 @@ interface AppState {
 export const useAppStore = create<AppState>()(
   devtools(
     (set) => ({
-      // Initial state with default project
-      currentProject: {
-        id: 'default',
-        name: 'Untitled Project',
-        description: 'A new project',
-        width: 800,
-        height: 600,
-        color_mode: 'RGB' as const,
-        resolution: 72,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        image_count: 0,
-        file_size: 0
-      },
+      // Initial state without default project
+      currentProject: null,
       projects: [
-        {
-          id: 'default',
-          name: 'Untitled Project',
-          description: 'A new project',
-          width: 800,
-          height: 600,
-          color_mode: 'RGB' as const,
-          resolution: 72,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          image_count: 0,
-          file_size: 0
-        },
         {
           id: 'sample1',
           name: 'Logo Design',
@@ -266,7 +243,18 @@ export const useAppStore = create<AppState>()(
       undo: () =>
         set((state) => {
           if (state.historyIndex > 0) {
-            return { historyIndex: state.historyIndex - 1 };
+            const newIndex = state.historyIndex - 1;
+            console.log('Undo: reverting to history index', newIndex);
+            
+            // Déclencher un événement pour que le Canvas se redessine
+            setTimeout(() => {
+              const event = new CustomEvent('undoRedo', { 
+                detail: { type: 'undo', historyIndex: newIndex } 
+              });
+              window.dispatchEvent(event);
+            }, 0);
+            
+            return { historyIndex: newIndex };
           }
           return state;
         }),
@@ -274,12 +262,52 @@ export const useAppStore = create<AppState>()(
       redo: () =>
         set((state) => {
           if (state.historyIndex < state.history.length - 1) {
-            return { historyIndex: state.historyIndex + 1 };
+            const newIndex = state.historyIndex + 1;
+            console.log('Redo: advancing to history index', newIndex);
+            
+            // Déclencher un événement pour que le Canvas se redessine
+            setTimeout(() => {
+              const event = new CustomEvent('undoRedo', { 
+                detail: { type: 'redo', historyIndex: newIndex } 
+              });
+              window.dispatchEvent(event);
+            }, 0);
+            
+            return { historyIndex: newIndex };
           }
           return state;
         }),
       
       resetHistory: () => set({ history: [], historyIndex: -1 }),
+      
+      addHistoryEntryWithState: (action: string, data?: any) =>
+        set((state) => {
+          const newEntry: HistoryEntry = {
+            id: crypto.randomUUID(),
+            action,
+            timestamp: Date.now(),
+            data: data || {},
+            previousState: {
+              canvas: { ...state.canvas },
+              // objects et layers seront ajoutés quand on les aura dans le state
+            }
+          };
+          
+          // Remove any entries after current index (when undoing and then doing new action)
+          const newHistory = state.history.slice(0, state.historyIndex + 1);
+          newHistory.push(newEntry);
+          
+          // Limit history size
+          const maxHistory = 50;
+          if (newHistory.length > maxHistory) {
+            newHistory.shift();
+          }
+          
+          return {
+            history: newHistory,
+            historyIndex: newHistory.length - 1,
+          };
+        }),
       
       // Layer actions
       addLayer: (layer) =>
@@ -401,7 +429,14 @@ export const useAppStore = create<AppState>()(
         })),
       
       clearRecentFiles: () =>
-        set({ recentFiles: [] })
+        set({ recentFiles: [] }),
+      
+      restoreProjectState: (canvasState: any, projectLayers: Layer[]) =>
+        set((state) => ({
+          canvas: { ...state.canvas, ...canvasState },
+          layers: projectLayers,
+          activeLayerId: projectLayers.length > 0 ? projectLayers[0].id : null
+        }))
     }),
     {
       name: 'bettergimp-store',

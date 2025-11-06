@@ -1,9 +1,11 @@
 import { useAppStore } from '@/store/app';
+import { useCanvasObjects } from '@/store/canvas';
 import { useProjectService } from '@/services/projectService';
 import { useCallback } from 'react';
 
 export const useAutoSave = () => {
   const { currentProject, canvas, layers } = useAppStore();
+  const { objects } = useCanvasObjects();
   const projectService = useProjectService();
 
   const saveProject = useCallback(async () => {
@@ -12,25 +14,16 @@ export const useAutoSave = () => {
     try {
       // Créer l'état du canvas à sauvegarder
       const canvasState = {
-        layers: layers,
-        canvas: {
-          zoom: canvas.zoom,
-          pan: canvas.pan,
-          rotation: canvas.rotation,
-          tool: canvas.tool,
-          brushColor: canvas.brushColor,
-          brushSize: canvas.brushSize,
-          brushOpacity: canvas.brushOpacity
-        },
-        project: {
-          width: currentProject.width,
-          height: currentProject.height
-        },
-        timestamp: new Date().toISOString(),
-        version: '1.0.0'
+        zoom: canvas.zoom,
+        pan: canvas.pan,
+        rotation: canvas.rotation,
+        tool: canvas.tool,
+        brushColor: canvas.brushColor,
+        brushSize: canvas.brushSize,
+        brushOpacity: canvas.brushOpacity
       };
 
-      const success = await projectService.saveProjectState(currentProject.id, canvasState);
+      const success = await projectService.saveProjectState(currentProject.id, canvasState, objects, layers);
       
       if (success) {
         console.log('Project auto-saved successfully');
@@ -43,7 +36,7 @@ export const useAutoSave = () => {
       console.error('Error during auto-save:', error);
       return false;
     }
-  }, [currentProject, canvas, layers, projectService]);
+  }, [currentProject, canvas, layers, objects, projectService]);
 
   const saveProjectManual = useCallback(async () => {
     if (!currentProject) {
