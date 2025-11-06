@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAppStore } from '@/store/app';
+import { useCanvasObjects } from '@/store/canvas';
 import { useAutoSave } from '@/hooks/useAutoSave';
 import { useProjectService } from '@/services/projectService';
 import { Button } from '@/components/ui/button';
@@ -44,12 +45,10 @@ const ToolsSidebar: React.FC<ToolsSidebarProps> = ({ onAddShape, onClearCanvas, 
     currentProject,
     setCurrentTool,
     setZoom,
-    updateCanvasState,
-    undo,
-    redo,
-    history,
-    historyIndex
+    updateCanvasState
   } = useAppStore();
+  
+  const { undo: undoObjects, redo: redoObjects } = useCanvasObjects();
   
   const { saveProjectManual, canSave } = useAutoSave();
   const projectService = useProjectService();
@@ -140,28 +139,36 @@ const ToolsSidebar: React.FC<ToolsSidebarProps> = ({ onAddShape, onClearCanvas, 
         <div className="grid grid-cols-2 gap-2">
           <Button 
             onClick={() => {
-              undo();
-              console.log('Undo action');
+              const success = undoObjects();
+              if (success) {
+                console.log('Undo successful');
+              } else {
+                console.log('Nothing to undo');
+              }
             }}
             variant="outline"
             size="sm"
             className="h-9 text-xs justify-start"
-            disabled={historyIndex <= 0}
-            title={`Undo (Ctrl+Z) - ${historyIndex > 0 ? history[historyIndex].action : 'Nothing to undo'}`}
+            disabled={!currentProject}
+            title="Undo (Ctrl+Z)"
           >
             <Undo className="w-4 h-4 mr-1" />
             Undo
           </Button>
           <Button 
             onClick={() => {
-              redo();
-              console.log('Redo action');
+              const success = redoObjects();
+              if (success) {
+                console.log('Redo successful');
+              } else {
+                console.log('Nothing to redo');
+              }
             }}
             variant="outline"
             size="sm"
             className="h-9 text-xs justify-start"
-            disabled={historyIndex >= history.length - 1}
-            title={`Redo (Ctrl+Y) - ${historyIndex < history.length - 1 ? history[historyIndex + 1].action : 'Nothing to redo'}`}
+            disabled={!currentProject}
+            title="Redo (Ctrl+Y)"
           >
             <Redo className="w-4 h-4 mr-1" />
             Redo
@@ -215,9 +222,9 @@ const ToolsSidebar: React.FC<ToolsSidebarProps> = ({ onAddShape, onClearCanvas, 
         </div>
         
         {/* History Info */}
-        {history.length > 0 && (
+        {currentProject && (
           <div className="mt-2 text-xs text-muted-foreground text-center">
-            {historyIndex + 1} / {history.length} actions
+            Undo/Redo disponible
           </div>
         )}
       </div>

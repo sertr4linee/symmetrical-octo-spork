@@ -343,6 +343,10 @@ const Canvas: React.FC = () => {
         points: [{ x: adjustedX, y: adjustedY }]
       };
 
+      // Sauvegarder un snapshot avant d'ajouter l'objet
+      const { saveSnapshot } = useCanvasObjects.getState();
+      saveSnapshot();
+      
       addObject(newStrokeObject);
       
       // Add to history
@@ -445,6 +449,10 @@ const Canvas: React.FC = () => {
         strokeWidth: 2
       };
 
+      // Sauvegarder un snapshot avant d'ajouter l'objet
+      const { saveSnapshot } = useCanvasObjects.getState();
+      saveSnapshot();
+      
       addObject(newShape);
       
       // Add to history
@@ -461,6 +469,11 @@ const Canvas: React.FC = () => {
 
     const handleClearCanvas = () => {
       const objectsCleared = objects.length;
+      
+      // Sauvegarder un snapshot avant de nettoyer
+      const { saveSnapshot } = useCanvasObjects.getState();
+      saveSnapshot();
+      
       clearObjects();
       
       // Add to history

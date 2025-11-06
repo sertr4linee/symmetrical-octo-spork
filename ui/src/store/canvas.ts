@@ -21,6 +21,8 @@ export interface CanvasObject {
 interface CanvasObjectsState {
   objects: CanvasObject[];
   selectedObjectId: string | null;
+  objectHistory: CanvasObject[][];
+  historyIndex: number;
   
   // Actions
   addObject: (object: CanvasObject) => void;
@@ -29,11 +31,16 @@ interface CanvasObjectsState {
   setSelectedObject: (id: string | null) => void;
   clearObjects: () => void;
   restoreObjects: (objects: CanvasObject[]) => void;
+  saveSnapshot: () => void;
+  undo: () => boolean;
+  redo: () => boolean;
 }
 
-export const useCanvasObjects = create<CanvasObjectsState>((set) => ({
+export const useCanvasObjects = create<CanvasObjectsState>((set, get) => ({
   objects: [],
   selectedObjectId: null,
+  objectHistory: [[]],
+  historyIndex: 0,
   
   addObject: (object) =>
     set((state) => ({
@@ -60,5 +67,66 @@ export const useCanvasObjects = create<CanvasObjectsState>((set) => ({
     set({ objects: [], selectedObjectId: null }),
     
   restoreObjects: (objects: CanvasObject[]) =>
-    set({ objects, selectedObjectId: null })
+    set({ objects, selectedObjectId: null }),
+    
+  saveSnapshot: () =>
+    set((state) => {
+      const newSnapshot = [...state.objects];
+      const newHistory = state.objectHistory.slice(0, state.historyIndex + 1);
+      newHistory.push(newSnapshot);
+      
+      // Limiter l'historique à 50 entrées
+      if (newHistory.length > 50) {
+        newHistory.shift();
+      }
+      
+      return {
+        objectHistory: newHistory,
+        historyIndex: newHistory.length - 1
+      };
+    }),
+    
+  undo: () => {
+    const state = get();
+    if (state.historyIndex > 0) {
+      const newIndex = state.historyIndex - 1;
+      const previousObjects = state.objectHistory[newIndex];
+      
+      set({
+        objects: [...previousObjects],
+        historyIndex: newIndex,
+        selectedObjectId: null
+      });
+      
+      // Déclencher le redraw du canvas
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('canvasRedraw'));
+      }, 0);
+      
+      return true;
+    }
+    return false;
+  },
+    
+  redo: () => {
+    const state = get();
+    if (state.historyIndex < state.objectHistory.length - 1) {
+      const newIndex = state.historyIndex + 1;
+      const nextObjects = state.objectHistory[newIndex];
+      
+      set({
+        objects: [...nextObjects],
+        historyIndex: newIndex,
+        selectedObjectId: null
+      });
+      
+      // Déclencher le redraw du canvas
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('canvasRedraw'));
+      }, 0);
+      
+      return true;
+    }
+    return false;
+  }
 }));

@@ -20,9 +20,13 @@ interface AppState {
   error: string | null;
   hasLoadedProjects: boolean;
   
-  // History
-  history: HistoryEntry[];
-  historyIndex: number;
+      // History
+    history: [],
+    historyIndex: -1,
+    
+
+  
+
   
   // User preferences
   preferences: UserPreferences;
